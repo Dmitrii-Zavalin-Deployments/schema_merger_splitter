@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: 🛎️ Checkout repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       # 🔧 GLOBAL ROBOT IDENTITY + NOTES INITIALIZATION
       - name: 🤖 Initialize Robot Identity & Notes
@@ -38,17 +40,24 @@ jobs:
         run: |
           vulture src || echo "⚠️ Vulture found unused code — review manually if needed"
 
-      - name: 🚀 Commit autoflake changes
+      - name: 🚀 Commit autoflake changes + Sync Notes
         run: |
           git add .
           if ! git diff --cached --quiet; then
             git commit -m "🤖 robot: auto-clean unused imports & variables"
+            TARGET_COMMIT=$(git rev-parse HEAD)
 
-            # Inline Git Notes
-            git notes add -m "robot: true" || true
-            git push origin refs/notes/* || true
+            # 1️⃣ Fetch remote notes FIRST
+            git fetch origin refs/notes/commits:refs/notes/commits || true
 
+            # 2️⃣ Add note locally
+            git notes add -f -m "robot: true" "$TARGET_COMMIT"
+
+            # 3️⃣ Push commit
             git push origin HEAD
+
+            # 4️⃣ Force-push notes
+            git push --force origin refs/notes/commits
           else
             echo "No autoflake changes to commit."
           fi
@@ -59,6 +68,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       # 🔧 GLOBAL ROBOT IDENTITY + NOTES INITIALIZATION
       - name: 🤖 Initialize Robot Identity & Notes
@@ -139,19 +150,26 @@ jobs:
         run: |
           echo "$(date '+%Y-%m-%d %H:%M:%S'): STEP processor triggered by '${{ github.actor }}' via '${{ github.event_name }}'" >> trigger.txt
 
-      - name: 🚀 Commit and push trigger log
+      - name: 🚀 Commit and push trigger log + Sync Notes
         run: |
           git pull --rebase origin main || echo "⚠️ Pull failed or not needed"
           git add trigger.txt
 
           if ! git diff --cached --quiet; then
             git commit -m "🤖 robot: STEP processor trigger log"
+            TARGET_COMMIT=$(git rev-parse HEAD)
 
-            # Inline Git Notes
-            git notes add -m "robot: true" || true
-            git push origin refs/notes/* || true
+            # 1️⃣ Fetch remote notes FIRST
+            git fetch origin refs/notes/commits:refs/notes/commits || true
 
+            # 2️⃣ Add note locally
+            git notes add -f -m "robot: true" "$TARGET_COMMIT"
+
+            # 3️⃣ Push commit
             git push origin main
+
+            # 4️⃣ Force-push notes
+            git push --force origin refs/notes/commits
           else
             echo "No new trigger log to commit."
           fi
