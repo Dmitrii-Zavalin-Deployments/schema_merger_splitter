@@ -1,0 +1,122 @@
+{
+  "$id": "schema_merger_splitter_output.schema.json",
+  "title": "Schema Merger–Splitter Output Schema",
+  "type": "object",
+  "additionalProperties": false,
+
+  "properties": {
+
+    "inputs": {
+      "type": "object",
+      "description": "Source JSON files, target schema, and output path used for this merge operation.",
+      "additionalProperties": false,
+      "properties": {
+
+        "sources": {
+          "type": "array",
+          "description": "List of source JSON files used for merging.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "alias": { "type": "string", "description": "Logical name for the source file." },
+              "path": { "type": "string", "description": "Filesystem path to the source JSON file." },
+              "schema": { "type": "string", "description": "Optional schema reference for validation." }
+            },
+            "required": ["alias", "path"]
+          }
+        },
+
+        "target_schema": {
+          "type": "string",
+          "description": "Schema ID of the JSON structure to be produced."
+        },
+
+        "output_path": {
+          "type": "string",
+          "description": "Filesystem path where the merged JSON file was written."
+        }
+      },
+
+      "required": ["sources", "target_schema", "output_path"]
+    },
+
+    "config": {
+      "type": "object",
+      "description": "Mapping rules defining how fields are copied from source JSONs into the output JSON.",
+      "additionalProperties": false,
+      "properties": {
+
+        "mappings": {
+          "type": "array",
+          "description": "List of field mappings: source → destination.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "from": {
+                "type": "string",
+                "description": "JSONPath-like reference to a field in a source file."
+              },
+              "source": {
+                "type": "string",
+                "description": "Alias of the source JSON file."
+              },
+              "to": {
+                "type": "string",
+                "description": "JSONPath-like reference to the output location."
+              },
+              "required": {
+                "type": "boolean",
+                "description": "If true, missing field causes the merger to fail."
+              }
+            },
+            "required": ["from", "source", "to"]
+          }
+        }
+      },
+
+      "required": ["mappings"]
+    },
+
+    "results": {
+      "type": "object",
+      "description": "Execution results of the schema merger–splitter.",
+      "additionalProperties": false,
+      "properties": {
+
+        "output_file": {
+          "type": "string",
+          "description": "Path to the generated JSON file."
+        },
+
+        "copied_fields": {
+          "type": "array",
+          "description": "List of fields successfully copied into the output JSON.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "from": { "type": "string" },
+              "source": { "type": "string" },
+              "to": { "type": "string" }
+            },
+            "required": ["from", "source", "to"]
+          }
+        },
+
+        "missing_required_fields": {
+          "type": "array",
+          "description": "List of required fields that were not found in the source JSONs.",
+          "items": { "type": "string" }
+        },
+
+        "validation_passed": {
+          "type": "boolean",
+          "description": "Whether the output JSON matched the target schema."
+        }
+      },
+
+      "required": ["output_file", "copied_fields", "validation_passed"]
+    }
+  },
+
+  "required": ["inputs", "config", "results"]
+}
