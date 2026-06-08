@@ -1,0 +1,57 @@
+{
+  "$id": "schema_merger_splitter_input.schema.json",
+  "title": "Schema Merger–Splitter Input Schema",
+  "type": "object",
+  "additionalProperties": false,
+
+  "properties": {
+
+    "output_path": {
+      "type": "string",
+      "description": "Filesystem path where the merged JSON file must be written."
+    },
+
+    "sources": {
+      "type": "array",
+      "description": "List of source JSON files and the fields to extract from each.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+
+        "properties": {
+
+          "path": {
+            "type": "string",
+            "description": "Filesystem path to the source JSON file."
+          },
+
+          "mappings": {
+            "type": "array",
+            "description": "List of required field extraction rules for this source file.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+
+              "properties": {
+                "from": {
+                  "type": "string",
+                  "description": "JSONPath expression pointing to the field inside the source JSON."
+                },
+                "to": {
+                  "type": "string",
+                  "description": "Top-level key name in the output JSON where the extracted value will be placed."
+                }
+              },
+
+              "required": ["from", "to"]
+            }
+          }
+        },
+
+        "required": ["path", "mappings"]
+      }
+    }
+  },
+
+  "required": ["output_path", "sources"]
+}
