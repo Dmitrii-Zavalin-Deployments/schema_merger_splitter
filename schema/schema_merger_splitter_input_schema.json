@@ -6,52 +6,37 @@
 
   "properties": {
 
-    "output_path": {
+    "output_filename": {
       "type": "string",
-      "description": "Filesystem path where the merged JSON file must be written."
+      "description": "File name (not path) where the merged JSON must be written inside the simulators/ directory."
     },
 
     "sources": {
-      "type": "array",
-      "description": "List of source JSON files and the fields to extract from each.",
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
+      "type": "object",
+      "description": "Mapping of source filenames to their extraction rules. Each key must be a file name inside the simulators/ directory.",
+      "additionalProperties": {
+        "type": "array",
+        "description": "List of field extraction rules for this source file.",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
 
-        "properties": {
-
-          "path": {
-            "type": "string",
-            "description": "Filesystem path to the source JSON file."
+          "properties": {
+            "from": {
+              "type": "string",
+              "description": "JSONPath expression pointing to the field inside the source JSON."
+            },
+            "to": {
+              "type": "string",
+              "description": "Top-level key name in the merged JSON where the extracted value will be placed."
+            }
           },
 
-          "mappings": {
-            "type": "array",
-            "description": "List of required field extraction rules for this source file.",
-            "items": {
-              "type": "object",
-              "additionalProperties": false,
-
-              "properties": {
-                "from": {
-                  "type": "string",
-                  "description": "JSONPath expression pointing to the field inside the source JSON."
-                },
-                "to": {
-                  "type": "string",
-                  "description": "Top-level key name in the output JSON where the extracted value will be placed."
-                }
-              },
-
-              "required": ["from", "to"]
-            }
-          }
-        },
-
-        "required": ["path", "mappings"]
+          "required": ["from", "to"]
+        }
       }
     }
   },
 
-  "required": ["output_path", "sources"]
+  "required": ["output_filename", "sources"]
 }
