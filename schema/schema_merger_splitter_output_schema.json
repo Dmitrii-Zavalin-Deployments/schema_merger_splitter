@@ -1,62 +1,107 @@
 {
   "$id": "schema_merger_splitter_output_schema.json",
-  "title": "Schema Merger–Splitter Output Schema",
+  "title": "Schema‑Merger‑Splitter Output Schema",
   "type": "object",
   "additionalProperties": false,
-
   "properties": {
     "inputs": {
       "type": "object",
-      "description": "The validated input JSON instance used for this module run.",
       "additionalProperties": false,
-
       "properties": {
         "output_filename": {
-          "type": "string"
+          "type": "string",
+          "description": "File name (not path) where the merged JSON must be written inside the simulators/ directory."
         },
         "sources": {
           "type": "object",
+          "description": "Mapping of source filenames to their extraction rules.",
           "additionalProperties": {
             "type": "array",
             "items": {
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "from": { "type": "string" },
-                "to": { "type": "string" }
+                "from": {
+                  "type": "string"
+                },
+                "to": {
+                  "type": "string"
+                }
               },
-              "required": ["from", "to"]
+              "required": [
+                "from",
+                "to"
+              ]
             }
           }
         }
       },
-
-      "required": ["output_filename", "sources"]
+      "required": [
+        "output_filename",
+        "sources"
+      ]
     },
-
     "config": {
       "type": "object",
-      "description": "Empty configuration object (module has no configuration).",
       "additionalProperties": false,
-      "properties": {}
-    },
-
-    "results": {
-      "type": "object",
-      "description": "The results object produced by the module.",
-      "additionalProperties": false,
-
       "properties": {
-        "success": { "type": "boolean" },
-        "errors": {
+        "runs": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "requires_all": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "requires_none": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "input_file": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "requires_all",
+              "requires_none",
+              "input_file"
+            ]
+          }
         }
       },
-
-      "required": ["success", "errors"]
+      "required": [
+        "runs"
+      ]
+    },
+    "results": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "success": {
+          "type": "boolean"
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "success",
+        "errors"
+      ]
     }
   },
-
-  "required": ["inputs", "config", "results"]
+  "required": [
+    "inputs",
+    "config",
+    "results"
+  ]
 }
