@@ -2,6 +2,8 @@ import json
 import os
 from jsonpath_ng import parse
 from .interfaces.orchestrator_interface import SchemaMergerSplitterOrchestratorInterface
+from .output_assembly import OutputAssembly
+from schema.schema_merger_splitter_output_schema import OUTPUT_SCHEMA
 
 
 class SchemaMergerSplitterOrchestrator(SchemaMergerSplitterOrchestratorInterface):
@@ -31,7 +33,19 @@ class SchemaMergerSplitterOrchestrator(SchemaMergerSplitterOrchestratorInterface
         if len(errors) == 0:
             self.write_merged_output(merged_output, input_json_instance)
 
+        # Always write results.json
         self.write_results_json(len(errors) == 0, errors, input_json_instance)
+
+        # Phase 5 — Output Assembly
+        assembler = OutputAssembly(OUTPUT_SCHEMA)
+
+        final_output = assembler.assemble(
+            input_json_instance=input_json_instance,
+            config_instance={},  # module has no config
+            results_instance={"success": len(errors) == 0, "errors": errors}
+        )
+
+        assembler.write(final_output, "final_output.json")
 
     def validate_input_json(self, input_json_instance):
         """
