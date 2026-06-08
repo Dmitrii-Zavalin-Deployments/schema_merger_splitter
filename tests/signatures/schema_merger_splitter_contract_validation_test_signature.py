@@ -7,29 +7,30 @@ class SchemaMergerSplitterContractValidationTestSignature:
 
     def test_type_validation(self):
         """
-        All fields in the input JSON must match the exact types defined
-        in schema_merger_splitter_input.schema.json.
+        All fields in the Input Schema, Config Schema, and Results Schema
+        must match the exact types declared in their respective schemas.
         """
         raise NotImplementedError
 
     def test_presence_validation(self):
         """
-        All required fields must be present in the input JSON.
+        All required fields must be present in the input JSON,
+        the config JSON, and the results JSON.
         Missing fields must cause immediate failure.
         """
         raise NotImplementedError
 
     def test_excess_field_validation(self):
         """
-        Extra fields not defined in the Input Schema must cause immediate failure.
+        Extra fields not defined in the Input Schema, Config Schema,
+        or Results Schema must cause immediate failure.
         """
         raise NotImplementedError
 
-    def test_schema_state_mapping(self):
+    def test_schema_consistency(self):
         """
-        This module does not define a Sovereign Container.
-        Therefore, this test validates schema‑to‑schema consistency only:
-        - Input Schema must be internally consistent.
-        - Results Schema must be internally consistent.
+        Validate that all Phase‑1 schemas (input, config, results)
+        are internally consistent and structurally compatible with
+        the Output Schema’s requirements.
         """
         raise NotImplementedError

@@ -1,0 +1,46 @@
+{
+  "$id": "schema_merger_splitter_config_schema.json",
+  "title": "Schema‑Merger‑Splitter Config Schema",
+  "type": "object",
+  "additionalProperties": false,
+
+  "properties": {
+    "runs": {
+      "type": "array",
+      "description": "Deterministic list of conditional execution rules evaluated in order.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+
+        "properties": {
+          "requires_all": {
+            "type": "array",
+            "description": "All listed files must exist for this run to execute.",
+            "items": {
+              "type": "string",
+              "description": "Path to a file that must exist."
+            }
+          },
+
+          "requires_none": {
+            "type": "array",
+            "description": "None of the listed files may exist for this run to execute.",
+            "items": {
+              "type": "string",
+              "description": "Path to a file that must NOT exist."
+            }
+          },
+
+          "input_file": {
+            "type": "string",
+            "description": "Path to the merger‑splitter input JSON file to execute when conditions are satisfied."
+          }
+        },
+
+        "required": ["requires_all", "requires_none", "input_file"]
+      }
+    }
+  },
+
+  "required": ["runs"]
+}

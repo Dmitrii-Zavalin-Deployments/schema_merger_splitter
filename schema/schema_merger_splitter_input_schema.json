@@ -1,5 +1,5 @@
 {
-  "$id": "schema_merger_splitter_input.schema.json",
+  "$id": "schema_merger_splitter_input_schema.json",
   "title": "Schema Merger–Splitter Input Schema",
   "type": "object",
   "additionalProperties": false,

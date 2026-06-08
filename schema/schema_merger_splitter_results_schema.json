@@ -1,5 +1,5 @@
 {
-  "$id": "schema_merger_splitter_results.schema.json",
+  "$id": "schema_merger_splitter_results_schema.json",
   "title": "Schema Merger–Splitter Results Schema",
   "type": "object",
   "additionalProperties": false,
