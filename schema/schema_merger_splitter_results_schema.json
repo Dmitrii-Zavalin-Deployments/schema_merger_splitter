@@ -1,0 +1,24 @@
+{
+  "$id": "schema_merger_splitter_results.schema.json",
+  "title": "Schema Merger–Splitter Results Schema",
+  "type": "object",
+  "additionalProperties": false,
+
+  "properties": {
+
+    "success": {
+      "type": "boolean",
+      "description": "Indicates whether the module completed without errors."
+    },
+
+    "errors": {
+      "type": "array",
+      "description": "List of errors encountered during execution. Empty if execution succeeded.",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+
+  "required": ["success", "errors"]
+}
