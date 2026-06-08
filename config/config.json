@@ -1,0 +1,9 @@
+{
+    "runs": [
+        {
+            "input_file": "input.json",
+            "requires_all": [],
+            "requires_none": []
+        }
+    ]
+}

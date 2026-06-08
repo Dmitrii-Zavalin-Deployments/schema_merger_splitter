@@ -1,66 +1,81 @@
+# src/orchestrator.py
+
 import json
 import os
 from jsonpath_ng import parse
+
 from .interfaces.orchestrator_interface import SchemaMergerSplitterOrchestratorInterface
-from .output_assembly import OutputAssembly
-from schema.schema_merger_splitter_output_schema import OUTPUT_SCHEMA
+from .config_evaluator import ConfigEvaluator
+from .input_loader import InputLoader
 
 
 class SchemaMergerSplitterOrchestrator(SchemaMergerSplitterOrchestratorInterface):
     """
     Concrete implementation of the Schema‑Merger‑Splitter orchestrator.
-    Implements the deterministic sequence defined in the frozen Constitution.
+    Implements the deterministic Minimal Step Path defined in the frozen Constitution.
     """
 
-    def run(self, input_json_instance):
+    def run(self, config_run_entry):
         """
-        Execute the full Schema‑Merger‑Splitter minimal step path.
-        """
-        success, errors = self.validate_input_json(input_json_instance)
+        Execute the full Minimal Step Path for a single activated run.
 
+        Steps:
+        1. Evaluate run activation conditions.
+        2. Load and validate the input JSON.
+        3. Load source files.
+        4. Execute copy operations.
+        5. Write merged output.
+        6. Write results.json.
+
+        Returns the results object defined by the Results Schema.
+        """
+
+        evaluator = ConfigEvaluator()
+        loader = InputLoader()
+
+        # Step 1 — Evaluate activation
+        is_active = evaluator.evaluate_run_conditions(config_run_entry)
+        if not is_active:
+            results = {"success": False, "errors": ["Run conditions not satisfied."]}
+            self.write_results_json(False, ["Run conditions not satisfied."], {})
+            return results
+
+        # Step 2 — Load and validate input JSON
+        input_json_instance = loader.load_and_validate_input(config_run_entry["input_file"])
+
+        # Step 3 — Validate structure
+        success, errors = self.validate_input_json(input_json_instance)
         if not success:
             self.write_results_json(False, errors, input_json_instance)
-            return
+            return {"success": False, "errors": errors}
 
+        # Step 4 — Load source files
         loaded_sources, load_errors = self.load_source_files(input_json_instance)
         errors.extend(load_errors)
 
+        # Step 5 — Execute copy operations
         merged_output, copy_errors = self.execute_copy_operations(
             loaded_sources, input_json_instance
         )
         errors.extend(copy_errors)
 
+        # Step 6 — Write merged output if no errors
         if len(errors) == 0:
             self.write_merged_output(merged_output, input_json_instance)
 
-        # Always write results.json
+        # Step 7 — Always write results.json
         self.write_results_json(len(errors) == 0, errors, input_json_instance)
 
-        # Phase 5 — Output Assembly
-        assembler = OutputAssembly(OUTPUT_SCHEMA)
-
-        final_output = assembler.assemble(
-            input_json_instance=input_json_instance,
-            config_instance={},  # module has no config
-            results_instance={"success": len(errors) == 0, "errors": errors}
-        )
-
-        assembler.write(final_output, "final_output.json")
+        return {"success": len(errors) == 0, "errors": errors}
 
     def validate_input_json(self, input_json_instance):
-        """
-        Validate the input JSON against the Input Schema.
-        Reject missing fields, incorrect types, or extra fields.
-        """
         required_fields = {"sources", "output_filename"}
         errors = []
 
-        # Check required fields
         for field in required_fields:
             if field not in input_json_instance:
                 errors.append(f"Missing required field: {field}")
 
-        # Check for extra fields
         for field in input_json_instance:
             if field not in required_fields:
                 errors.append(f"Unexpected field in input: {field}")
@@ -68,10 +83,6 @@ class SchemaMergerSplitterOrchestrator(SchemaMergerSplitterOrchestratorInterface
         return (len(errors) == 0, errors)
 
     def load_source_files(self, input_json_instance):
-        """
-        Load all source files from data/testing-input-output/.
-        Missing or unreadable files must be recorded as errors.
-        """
         base_path = "data/testing-input-output"
         loaded = {}
         errors = []
@@ -88,19 +99,12 @@ class SchemaMergerSplitterOrchestrator(SchemaMergerSplitterOrchestratorInterface
         return loaded, errors
 
     def execute_copy_operations(self, loaded_sources, input_json_instance):
-        """
-        Execute one copy operation per mapping:
-        - Evaluate JSONPath
-        - Detect missing fields
-        - Detect duplicate 'to' keys
-        - Insert extracted values into the merged output object
-        """
         merged_output = {}
         errors = []
 
         for filename, mappings in input_json_instance["sources"].items():
             if filename not in loaded_sources:
-                continue  # Already recorded as error in load step
+                continue
 
             source_json = loaded_sources[filename]
 
@@ -125,10 +129,6 @@ class SchemaMergerSplitterOrchestrator(SchemaMergerSplitterOrchestratorInterface
         return merged_output, errors
 
     def write_merged_output(self, merged_output, input_json_instance):
-        """
-        Write the merged output file to data/testing-input-output/<output_filename>
-        only if no errors occurred.
-        """
         base_path = "data/testing-input-output"
         output_path = os.path.join(base_path, input_json_instance["output_filename"])
 
@@ -136,11 +136,6 @@ class SchemaMergerSplitterOrchestrator(SchemaMergerSplitterOrchestratorInterface
             json.dump(merged_output, f, indent=4)
 
     def write_results_json(self, success, errors, input_json_instance):
-        """
-        Always write the results JSON containing:
-        - success: bool
-        - errors: list of strings
-        """
         base_path = "data/testing-input-output"
         results_path = os.path.join(base_path, "results.json")
 
