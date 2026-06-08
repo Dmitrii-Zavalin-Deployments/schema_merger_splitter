@@ -41,4 +41,3 @@ class InputJsonDummy(InputLoaderInterface):
             "InputJsonDummy.load_and_validate_input() called — "
             "Phase‑3 dummy contains no logic."
         )
-        pass

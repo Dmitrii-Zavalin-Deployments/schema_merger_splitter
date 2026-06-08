@@ -41,4 +41,3 @@ class ConfigRunDummy(ConfigEvaluatorInterface):
             "ConfigRunDummy.evaluate_run_conditions() called — "
             "Phase‑3 dummy contains no logic."
         )
-        pass

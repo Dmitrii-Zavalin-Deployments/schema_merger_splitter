@@ -41,34 +41,28 @@ class ResultsObjectDummy(SchemaMergerSplitterOrchestratorInterface):
         logger.debug(
             "ResultsObjectDummy.run() called — Phase‑3 dummy contains no logic."
         )
-        pass
 
     def validate_input_json(self, input_json_instance):
         logger.debug(
             "ResultsObjectDummy.validate_input_json() called — Phase‑3 dummy contains no logic."
         )
-        pass
 
     def load_source_files(self, input_json_instance):
         logger.debug(
             "ResultsObjectDummy.load_source_files() called — Phase‑3 dummy contains no logic."
         )
-        pass
 
     def execute_copy_operations(self, loaded_sources, input_json_instance):
         logger.debug(
             "ResultsObjectDummy.execute_copy_operations() called — Phase‑3 dummy contains no logic."
         )
-        pass
 
     def write_merged_output(self, merged_output, input_json_instance):
         logger.debug(
             "ResultsObjectDummy.write_merged_output() called — Phase‑3 dummy contains no logic."
         )
-        pass
 
     def write_results_json(self, success, errors, input_json_instance):
         logger.debug(
             "ResultsObjectDummy.write_results_json() called — Phase‑3 dummy contains no logic."
         )
-        pass
