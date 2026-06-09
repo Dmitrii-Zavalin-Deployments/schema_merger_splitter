@@ -30,33 +30,91 @@ class SchemaMergerSplitterOrchestratorInterface:
                     f"Allowed members: {ALLOWED_MEMBERS}"
                 )
 
-    def run(self, input_json_instance):
-        """Execute the full Minimal Step Path for a single run."""
-        raise NotImplementedError
-
+    # ------------------------------------------------------------
+    # Step 2 (partially): Validate input JSON
+    # ------------------------------------------------------------
     def validate_input_json(self, input_json_instance):
-        """Validate the input JSON against the Input Schema."""
+        """
+        Validate the input JSON against the Input Schema.
+        Must detect:
+        - missing required fields
+        - extra fields
+        - incorrect types
+        """
         raise NotImplementedError
 
+    # ------------------------------------------------------------
+    # Step 3: Load all source JSON files
+    # ------------------------------------------------------------
     def load_source_files(self, input_json_instance):
-        """Load all source files referenced in the input JSON."""
+        """
+        Load all source files referenced in input_json_instance["sources"].
+
+        Returns:
+            loaded_sources: dict of filename → loaded JSON
+            errors: list of error messages
+        """
         raise NotImplementedError
 
+    # ------------------------------------------------------------
+    # Step 4: Execute copy operations
+    # ------------------------------------------------------------
     def execute_copy_operations(self, loaded_sources, input_json_instance):
-        """Execute one copy operation per mapping."""
+        """
+        Execute one copy operation per mapping:
+        - Evaluate JSONPath
+        - Detect missing fields
+        - Detect duplicate 'to' keys
+        - Insert extracted values into the merged output object
+
+        Returns:
+            merged_output: dict
+            errors: list of error messages
+        """
         raise NotImplementedError
 
+    # ------------------------------------------------------------
+    # Step 5: Write merged output file
+    # ------------------------------------------------------------
     def write_merged_output(self, merged_output, input_json_instance):
-        """Write the merged output file if no errors occurred."""
+        """
+        Write the merged output file to:
+            data/testing-input-output/<output_filename>
+
+        Only executed if no fatal errors occurred.
+        """
         raise NotImplementedError
 
+    # ------------------------------------------------------------
+    # Step 6: Write results JSON
+    # ------------------------------------------------------------
     def write_results_json(self, success, errors, input_json_instance):
-        """Always write the results JSON."""
+        """
+        Always write the results JSON containing:
+            {
+                "success": <bool>,
+                "errors": <list of strings>
+            }
+        """
         raise NotImplementedError
 
+    # ------------------------------------------------------------
+    # Step 7 (assembler uses this): Expose execution artifacts
+    # ------------------------------------------------------------
     def get_execution_artifacts(self):
         """
-        Return the validated input JSON, the validated config JSON, and the results object.
+        Return the validated input JSON, the validated config JSON,
+        and the results object.
+
         Required for Phase 5 Output Assembly.
+        """
+        raise NotImplementedError
+
+    # ------------------------------------------------------------
+    # Full Minimal Step Path executor
+    # ------------------------------------------------------------
+    def run(self, input_json_instance):
+        """
+        Execute the full Minimal Step Path for a single run.
         """
         raise NotImplementedError
