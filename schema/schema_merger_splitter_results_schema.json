@@ -5,7 +5,6 @@
   "additionalProperties": false,
 
   "properties": {
-
     "success": {
       "type": "boolean",
       "description": "Indicates whether the module completed without errors."
