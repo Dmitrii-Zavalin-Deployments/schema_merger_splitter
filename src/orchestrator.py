@@ -37,6 +37,12 @@ class SchemaMergerSplitterOrchestrator(SchemaMergerSplitterOrchestratorInterface
         is_active = evaluator.evaluate_run_conditions(config_run_entry)
         if not is_active:
             results = {"success": False, "errors": ["Run conditions not satisfied."]}
+
+            # Store artifacts for Phase 5
+            self._input_json_instance = {}
+            self._config_instance = config_run_entry
+            self._results_instance = results
+
             self.write_results_json(False, ["Run conditions not satisfied."], {})
             return results
 
@@ -46,8 +52,15 @@ class SchemaMergerSplitterOrchestrator(SchemaMergerSplitterOrchestratorInterface
         # Step 3 — Validate structure
         success, errors = self.validate_input_json(input_json_instance)
         if not success:
+            results = {"success": False, "errors": errors}
+
+            # Store artifacts for Phase 5
+            self._input_json_instance = input_json_instance
+            self._config_instance = config_run_entry
+            self._results_instance = results
+
             self.write_results_json(False, errors, input_json_instance)
-            return {"success": False, "errors": errors}
+            return results
 
         # Step 4 — Load source files
         loaded_sources, load_errors = self.load_source_files(input_json_instance)
@@ -64,9 +77,15 @@ class SchemaMergerSplitterOrchestrator(SchemaMergerSplitterOrchestratorInterface
             self.write_merged_output(merged_output, input_json_instance)
 
         # Step 7 — Always write results.json
+        results = {"success": len(errors) == 0, "errors": errors}
         self.write_results_json(len(errors) == 0, errors, input_json_instance)
 
-        return {"success": len(errors) == 0, "errors": errors}
+        # Store artifacts for Phase 5
+        self._input_json_instance = input_json_instance
+        self._config_instance = config_run_entry
+        self._results_instance = results
+
+        return results
 
     def validate_input_json(self, input_json_instance):
         required_fields = {"sources", "output_filename"}
@@ -146,3 +165,14 @@ class SchemaMergerSplitterOrchestrator(SchemaMergerSplitterOrchestratorInterface
 
         with open(results_path, "w") as f:
             json.dump(results, f, indent=4)
+
+    def get_execution_artifacts(self):
+        """
+        Return the validated input JSON, the validated config JSON, and the results object.
+        Required for Phase 5 Output Assembly.
+        """
+        return (
+            self._input_json_instance,
+            self._config_instance,
+            self._results_instance,
+        )
