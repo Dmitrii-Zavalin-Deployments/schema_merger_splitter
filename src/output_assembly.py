@@ -21,6 +21,12 @@ class OutputAssembly:
     def assemble(self, input_json_instance, config_instance, results_instance):
         """
         Assemble the final output JSON object according to the frozen Output Schema.
+
+        This function performs only:
+        - deterministic structural assembly
+        - schema validation
+
+        No transformations, no defaults, and no derived computations are permitted.
         """
 
         # 1. Deterministic structural assembly
