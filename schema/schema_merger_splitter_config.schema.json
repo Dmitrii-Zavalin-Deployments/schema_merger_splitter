@@ -34,10 +34,20 @@
           "input_file": {
             "type": "string",
             "description": "Path to the merger‑splitter input JSON file to execute when conditions are satisfied."
+          },
+
+          "output_assembler_file": {
+            "type": "string",
+            "description": "Path where the final assembled output object for this run must be written."
           }
         },
 
-        "required": ["requires_all", "requires_none", "input_file"]
+        "required": [
+          "requires_all",
+          "requires_none",
+          "input_file",
+          "output_assembler_file"
+        ]
       }
     }
   },
