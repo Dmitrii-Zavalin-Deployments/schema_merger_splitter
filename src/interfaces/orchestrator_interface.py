@@ -17,6 +17,7 @@ class SchemaMergerSplitterOrchestratorInterface:
             "execute_copy_operations",
             "write_merged_output",
             "write_results_json",
+            "get_execution_artifacts",
         }
 
         for name in cls.__dict__:
@@ -51,4 +52,11 @@ class SchemaMergerSplitterOrchestratorInterface:
 
     def write_results_json(self, success, errors, input_json_instance):
         """Always write the results JSON."""
+        raise NotImplementedError
+
+    def get_execution_artifacts(self):
+        """
+        Return the validated input JSON, the validated config JSON, and the results object.
+        Required for Phase 5 Output Assembly.
+        """
         raise NotImplementedError
