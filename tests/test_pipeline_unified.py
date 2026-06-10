@@ -47,14 +47,19 @@ class TestPipelineUnified(PipelineUnifiedTestSignature):
 
     def _inject_run_config_into_orchestrator(self, orchestrator, input_file: Path, output_file: Path):
         """
-        The orchestrator's execution artifacts contract expects a single
-        validated config *entry* (one run), not the whole config.json.
+        Inject a schema‑valid config object into orchestrator._config.
+        The Output Schema requires:
+            config = { "runs": [ <single_run_entry> ] }
         """
         orchestrator._config = {
-            "requires_all": [],
-            "requires_none": [],
-            "input_file": str(input_file),
-            "output_assembler_file": str(output_file),
+            "runs": [
+                {
+                    "requires_all": [],
+                    "requires_none": [],
+                    "input_file": str(input_file),
+                    "output_assembler_file": str(output_file),
+                }
+            ]
         }
 
     # ------------------------------------------------------------

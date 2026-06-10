@@ -1,98 +1,143 @@
 #!/usr/bin/env bash
+# src/debug/forensic_audit.sh
+#
+# Post‑test forensic audit for Schema‑Merger‑Splitter pipeline.
+# Designed to run in GitHub Actions after pytest, to surface root causes
+# and provide automated‑repair hints (sed lines are commented out).
+
 set -euo pipefail
 
 echo "=== FORENSIC AUDIT: START ==="
 
-###############################################################################
-# 1. Locate orchestrator config guard and error message
-###############################################################################
 echo
-echo "=== 1. Locate orchestrator config guard and error message ==="
-grep -RIn --color=always '_config' src/orchestrator.py || true
-grep -RIn --color=always 'Orchestrator missing validated config' src/orchestrator.py || true
+echo "=== 1. Show failing test summary (if available) ==="
+if [ -f ".pytest_cache/v/cache/lastfailed" ]; then
+  cat .pytest_cache/v/cache/lastfailed || true
+fi
 
-###############################################################################
-# 2. Find all test call sites of get_execution_artifacts() and _config usage
-###############################################################################
 echo
-echo "=== 2. Find all test call sites of get_execution_artifacts() and _config usage ==="
-grep -RIn --color=always 'get_execution_artifacts' tests || true
-grep -RIn --color=always '_config' tests || true
+echo "=== 2. Grep for orchestrator config guard and artifacts usage ==="
+grep -n "get_execution_artifacts" -R src tests || true
+grep -n "_config" -R src tests || true
+grep -n "assemble_final_output" -R src tests || true
 
-###############################################################################
-# 3. Show orchestrator source (smoking gun)
-###############################################################################
 echo
-echo "=== 3. Show orchestrator source (numbered, smoking gun around guard) ==="
+echo "=== 3. Show smoking‑gun source around orchestrator artifacts ==="
 echo "--- FILE: src/orchestrator.py ---"
-cat -n src/orchestrator.py | sed -n '160,230p'
-
-###############################################################################
-# 4. Show orchestrator tests around artifacts expectations
-###############################################################################
-echo
-echo "=== 4. Show orchestrator tests around artifacts expectations ==="
-echo "--- FILE: tests/test_orchestrator.py ---"
-cat -n tests/test_orchestrator.py | sed -n '330,390p'
+if [ -f "src/orchestrator.py" ]; then
+  nl -ba src/orchestrator.py | sed -n '160,230p' || true
+fi
 
 echo
-echo "--- FILE: tests/signatures/orchestrator_test_signature.py ---"
-cat -n tests/signatures/orchestrator_test_signature.py | sed -n '140,200p'
+echo "--- FILE: src/output_assembler.py ---"
+if [ -f "src/output_assembler.py" ]; then
+  nl -ba src/output_assembler.py | sed -n '1,260p' || true
+fi
 
-###############################################################################
-# 5. Show pipeline tests that indirectly hit orchestrator artifacts
-###############################################################################
 echo
-echo "=== 5. Show pipeline tests that indirectly hit orchestrator artifacts ==="
-grep -n --color=always 'get_execution_artifacts' tests/test_pipeline_unified.py || true
-cat -n tests/test_pipeline_unified.py | sed -n '60,120p'
-cat -n tests/test_pipeline_unified.py | sed -n '180,240p'
-cat -n tests/test_pipeline_unified.py | sed -n '280,340p'
-cat -n tests/test_pipeline_unified.py | sed -n '380,440p'
+echo "--- FILE: tests/test_pipeline_unified.py ---"
+if [ -f "tests/test_pipeline_unified.py" ]; then
+  nl -ba tests/test_pipeline_unified.py | sed -n '1,260p' || true
+  nl -ba tests/test_pipeline_unified.py | sed -n '260,520p' || true
+fi
 
-###############################################################################
-# 6. Scan for remaining NotImplementedError in pipeline
-###############################################################################
 echo
-echo "=== 6. Scan for remaining NotImplementedError in pipeline (potential follow-up failures) ==="
-grep -RIn --color=always 'NotImplementedError' src tests || true
+echo "=== 4. Show schema definitions for config/output/results ==="
+if [ -d "schema" ]; then
+  echo "--- schema_merger_splitter_config.schema.json ---"
+  nl -ba schema/schema_merger_splitter_config.schema.json | sed -n '1,260p' || true
 
-###############################################################################
-# 7. Root cause summary
-###############################################################################
-echo
-echo "=== 7. ROOT CAUSE SUMMARY ==="
-echo "Unit tests construct SchemaMergerSplitterOrchestrator() directly."
-echo "They call run() and get_execution_artifacts() WITHOUT injecting _config."
-echo "Your orchestrator now raises RuntimeError if _config is missing."
-echo
-echo "→ All orchestrator tests fail."
-echo "→ All pipeline tests fail when they call get_execution_artifacts()."
-echo
-echo "To satisfy BOTH:"
-echo "  - Unit tests must be allowed to call get_execution_artifacts() with no config."
-echo "  - Pipeline must still require validated config (no defaults)."
+  echo
+  echo "--- schema_merger_splitter_output_schema.json ---"
+  nl -ba schema/schema_merger_splitter_output_schema.json | sed -n '1,260p' || true
 
-###############################################################################
-# 8. Proposed automated repair templates (commented out)
-###############################################################################
-echo
-echo "=== 8. Proposed automated repair templates (commented out) ==="
+  echo
+  echo "--- schema_merger_splitter_results_schema.json ---"
+  nl -ba schema/schema_merger_splitter_results_schema.json | sed -n '1,260p' || true
+fi
 
-echo "# Option A: Remove the strict guard entirely (unit tests pass; pipeline enforces config via assembler)"
-echo "# sed -i '/if not hasattr(self, \"_config\"):/,/raise RuntimeError/d' src/orchestrator.py"
 echo
+echo "=== 5. Inspect latest pipeline outputs (if any) ==="
+if [ -d "data/testing-input-output" ]; then
+  echo "--- ls -l data/testing-input-output ---"
+  ls -l data/testing-input-output || true
 
-echo "# Option B: Downgrade guard to soft-pass (explicit None, still no defaults invented)"
-echo "# sed -i \"s/raise RuntimeError.*/self._config = None  # allow missing config in unit tests/\" src/orchestrator.py"
+  echo
+  echo "--- cat merged.json (if exists) ---"
+  if [ -f "data/testing-input-output/merged.json" ]; then
+    cat data/testing-input-output/merged.json || true
+  fi
+
+  echo
+  echo "--- cat merged.json.results.json (if exists) ---"
+  if [ -f "data/testing-input-output/merged.json.results.json" ]; then
+    cat data/testing-input-output/merged.json.results.json || true
+  fi
+fi
+
 echo
+echo "=== 6. Inspect ExecutionArtifactsDummy for config shape ==="
+if [ -f "tests/dummies/execution_artifacts_dummy.py" ]; then
+  nl -ba tests/dummies/execution_artifacts_dummy.py | sed -n '1,260p' || true
+fi
 
-echo "# Option C: Only enforce config when NOT running under pytest"
-echo "# sed -i \"s/if not hasattr(self, '_config'):/if not hasattr(self, '_config') and 'pytest' not in sys.modules:/\" src/orchestrator.py"
 echo
+echo "=== 7. Focused audit: helper injecting orchestrator._config in pipeline tests ==="
+if [ -f "tests/test_pipeline_unified.py" ]; then
+  grep -n "_inject_run_config_into_orchestrator" -n tests/test_pipeline_unified.py || true
+  nl -ba tests/test_pipeline_unified.py | sed -n '40,120p' || true
+fi
 
-echo "# Diff preview for Option A (non-destructive):"
-echo "# sed '/if not hasattr(self, \"_config\"):/,/raise RuntimeError/d' src/orchestrator.py | diff -u src/orchestrator.py -"
+echo
+echo "=== 8. DIAGNOSTIC NOTE ==="
+echo "The failing ValidationError shows instance['config'] is a single run entry:"
+echo "  {\"requires_all\": [], \"requires_none\": [], \"input_file\": ..., \"output_assembler_file\": ...}"
+echo "but the config schema expects:"
+echo "  {\"runs\": [ {\"requires_all\": [], \"requires_none\": [], \"input_file\": ..., \"output_assembler_file\": ...} ]}"
+echo
+echo "This strongly suggests that the helper which injects orchestrator._config for"
+echo "execution artifacts should wrap the run entry inside a top‑level 'runs' array,"
+echo "so that artifacts['config'] matches schema_merger_splitter_config.schema.json."
+
+echo
+echo "=== 9. SUGGESTED AUTOMATED REPAIRS (COMMENTED sed COMMANDS) ==="
+echo "# The goal: make orchestrator._config a schema‑valid config object:"
+echo "#   {\"runs\": [<single_run_entry>]}"
+echo "# instead of a bare single_run_entry dict."
+
+echo
+echo "# 9.1 Patch tests/test_pipeline_unified.py helper _inject_run_config_into_orchestrator"
+echo "# Current shape (for reference):"
+echo "#   def _inject_run_config_into_orchestrator(self, orchestrator, input_file, output_file):"
+echo "#       orchestrator._config = {"
+echo "#           \"requires_all\": [],"
+echo "#           \"requires_none\": [],"
+echo "#           \"input_file\": str(input_file),"
+echo "#           \"output_assembler_file\": str(output_file),"
+echo "#       }"
+echo "#"
+echo "# Desired shape:"
+echo "#   def _inject_run_config_into_orchestrator(self, orchestrator, input_file, output_file):"
+echo "#       orchestrator._config = {"
+echo "#           \"runs\": ["
+echo "#               {"
+echo "#                   \"requires_all\": [],"
+echo "#                   \"requires_none\": [],"
+echo "#                   \"input_file\": str(input_file),"
+echo "#                   \"output_assembler_file\": str(output_file),"
+echo "#               }"
+echo "#           ]"
+echo "#       }"
+echo "#"
+echo "# Example sed patch (may need tweaking for exact spacing/indentation):"
+echo "# sed -i \"s/orchestrator._config = {\\$/orchestrator._config = {\\\\n            \\\"runs\\\": [\\\\n                {\\\\n                    \\\"requires_all\\\": [],\\\\n                    \\\"requires_none\\\": [],\\\\n                    \\\"input_file\\\": str(input_file),\\\\n                    \\\"output_assembler_file\\\": str(output_file),\\\\n                }\\\\n            ]\\\\n        }/\" tests/test_pipeline_unified.py"
+
+echo
+echo "# 9.2 (Optional) Assert that artifacts['config'] is always schema‑shaped"
+echo "# You can add a quick debug assertion in tests/test_pipeline_unified.py"
+echo "# near final_output_consistency to confirm:"
+echo "#   assert set(artifacts['config'].keys()) == {'runs'}"
+echo "#   assert isinstance(artifacts['config']['runs'], list)"
 
 echo
 echo "=== FORENSIC AUDIT: END ==="
