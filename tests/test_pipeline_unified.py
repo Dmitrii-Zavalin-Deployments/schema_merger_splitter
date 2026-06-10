@@ -577,11 +577,16 @@ class TestPipelineUnified(PipelineUnifiedTestSignature):
         self._inject_run_config_into_orchestrator(orchestrator, input_file, output_file)
         artifacts = orchestrator.get_execution_artifacts()
 
+        # FIX #1 — wrap output_file in Path()
         assembler.assemble_final_output(
-            artifacts["inputs"], artifacts["config"], artifacts["results"], output_file
+            artifacts["inputs"],
+            artifacts["config"],
+            artifacts["results"],
+            Path(output_file),
         )
 
-        final = self._load_json(output_file)
+        # FIX #2 — wrap output_file in Path() for loading
+        final = self._load_json(Path(output_file))
 
         assert final["inputs"] == artifacts["inputs"]
         assert final["config"] == artifacts["config"]
