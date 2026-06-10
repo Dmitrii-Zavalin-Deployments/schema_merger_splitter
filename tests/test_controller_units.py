@@ -223,7 +223,7 @@ def test_config_conditional_evaluation_branches():
          patch("pathlib.Path.exists", side_effect=custom_exists_side_effect), \
          patch("pathlib.Path.open", mock_open(read_data=json.dumps(runs_payload))):
          
-        activated_pipelines = controller.load_and_evaluate_config("/absolute/config.json")
+        activated_pipelines = controller.load_and_evaluate_config("/config/config.json")
         # Run 1 passes both validation paths -> activated
         # Run 2 fails requires_all and fails requires_none -> skipped
         assert activated_pipelines == [("activated_run.json", "activated_out.json")]
