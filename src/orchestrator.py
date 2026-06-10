@@ -58,13 +58,18 @@ class SchemaMergerSplitterOrchestrator(SchemaMergerSplitterOrchestratorInterface
         """
         base_dir = Path(__file__).resolve().parents[1]
 
+        # NEW: Default directory for all source files
+        default_source_dir = base_dir / "data" / "testing-input-output"
+
         loaded_sources = {}
         errors = []
 
         for filename in input_json_instance["sources"].keys():
             path = Path(filename)
+
+            # NEW: Resolve relative paths inside data/testing-input-output/
             if not path.is_absolute():
-                path = base_dir / filename
+                path = default_source_dir / filename
 
             if not path.exists():
                 errors.append(f"Missing source file: {filename}")
@@ -200,7 +205,7 @@ class SchemaMergerSplitterOrchestrator(SchemaMergerSplitterOrchestratorInterface
 
         return {
             "inputs": self._inputs,
-            "config": config_value,   # None = absence, not a default
+            "config": config_value,
             "results": self._results,
         }
 
