@@ -188,12 +188,13 @@ jobs:
           # FIX: Removed the leading slash. Path is relative to the repository root.
           ls -R data/testing-input-output/
 
-      - name: 🌊 Execute Bernoulli Solver
+      - name: 🧩 Execute Schema‑Merger‑Splitter
         run: |
-          # The solver requires the path to the synchronized input file
-          # PYTHONPATH ensures src/ is discoverable for internal imports
-          # export PYTHONPATH="${PYTHONPATH}:$(pwd)"
-          python3 src/bernoulli_pipeline_orchestrator.py ./data/testing-input-output/bernoulli_solver_input.json
+          # Ensure src/ is discoverable for internal imports
+          export PYTHONPATH="${PYTHONPATH}:$(pwd)"
+
+          # Execute the Schema‑Merger‑Splitter pipeline runner
+          python3 src/main.py
 
       - name: 📤 Synchronize Results (Dropbox)
         if: success()

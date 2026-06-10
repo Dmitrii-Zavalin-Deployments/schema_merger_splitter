@@ -24,11 +24,24 @@ This file is NOT part of the Minimal Step Path and is therefore allowed to
 instantiate and connect the components.
 """
 
+import logging
 from pathlib import Path
 
 from controller import SchemaMergerSplitterController
 from orchestrator import SchemaMergerSplitterOrchestrator
 from output_assembler import SchemaMergerSplitterOutputAssembler
+
+
+# ------------------------------------------------------------
+# Configure logger
+# ------------------------------------------------------------
+logger = logging.getLogger("schema_merger_splitter")
+logger.setLevel(logging.INFO)
+
+handler = logging.StreamHandler()
+formatter = logging.Formatter("[%(levelname)s] %(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 
 def main():
@@ -42,16 +55,16 @@ def main():
     runs = controller.load_and_evaluate_config(config_path)
 
     if not runs:
-        print("No runs activated by config conditions.")
+        logger.info("No runs activated by config conditions.")
         return
 
     # ------------------------------------------------------------
     # Stage 2 — Execute each run in order
     # ------------------------------------------------------------
     for input_file, output_assembler_file in runs:
-        print(f"\n=== Executing run ===")
-        print(f"Input file: {input_file}")
-        print(f"Output assembler file: {output_assembler_file}")
+        logger.info("=== Executing run ===")
+        logger.info(f"Input file: {input_file}")
+        logger.info(f"Output assembler file: {output_assembler_file}")
 
         # Step 2 — Load input JSON
         output_filename, sources = controller.load_input_file(input_file)
@@ -64,11 +77,9 @@ def main():
         orchestrator = SchemaMergerSplitterOrchestrator()
         success, errors = orchestrator.run(input_json_instance)
 
-        print(f"Run success: {success}")
-        if errors:
-            print("Errors:")
-            for e in errors:
-                print(f"  - {e}")
+        logger.info(f"Run success: {success}")
+        for e in errors:
+            logger.error(f"Error: {e}")
 
         # Step 7 — Output Assembler
         artifacts = orchestrator.get_execution_artifacts()
@@ -81,7 +92,7 @@ def main():
             output_assembler_file
         )
 
-        print(f"Final assembled output written to: {output_assembler_file}")
+        logger.info(f"Final assembled output written to: {output_assembler_file}")
 
 
 if __name__ == "__main__":
