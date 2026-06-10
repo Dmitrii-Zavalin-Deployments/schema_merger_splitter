@@ -203,21 +203,23 @@ def test_config_conditional_evaluation_branches():
 
     def custom_exists_side_effect(*args):
         if not args:
-            return False # Default to False (file not found)
+            return False
 
         self_path = args[0]
         path_str = str(self_path)
         
-        # Explicitly define known files
+        # Whitelist the configuration file itself so the controller can load it
+        if "config.json" in path_str:
+            return True
+
+        # Explicitly define condition mock environments
         if "present_dependency.txt" in path_str:
             return True
         if "present_blocker.txt" in path_str:
             return True
             
-        # Files that MUST NOT exist (absent_blocker.txt, missing_dependency.txt)
-        # should return False, which is the default below.
-        
-        return False # Fallback: assume file does not exist
+        # Default fallback: files do not exist (covers missing paths and requires_none blockers)
+        return False
 
     with patch("src.controller.validate"), \
          patch("pathlib.Path.exists", side_effect=custom_exists_side_effect), \
