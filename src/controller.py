@@ -122,8 +122,12 @@ class SchemaMergerSplitterController(SchemaMergerSplitterControllerInterface):
 
         # Normalize input file path (relative to project root if not absolute)
         input_path = Path(input_file_path)
+
+        # Default directory for all input files
+        default_input_dir = base_dir / "data" / "testing-input-output"
+
         if not input_path.is_absolute():
-            input_path = base_dir / input_file_path
+            input_path = default_input_dir / input_file_path
 
         if not input_path.exists():
             raise FileNotFoundError(f"Input file not found: {input_path}")
