@@ -3,8 +3,8 @@
         {
             "requires_all": [],
             "requires_none": [],
-            "input_file": "input.json",
-            "output_assembler_file": "final_output.json"
+            "input_file": "building_navier_stokes_input.json",
+            "output_assembler_file": "building_navier_stokes_output.json"
         }
     ]
 }
