@@ -202,26 +202,22 @@ def test_config_conditional_evaluation_branches():
     }
 
     def custom_exists_side_effect(*args):
-        # Defensive check: if no arguments passed, mock was likely called
-        # by an internal path resolution or unexpected context.
         if not args:
-            return True 
+            return False # Default to False (file not found)
 
-        # args[0] is the Path object instance
         self_path = args[0]
         path_str = str(self_path)
         
-        # Simulate dynamic filesystem statuses
+        # Explicitly define known files
         if "present_dependency.txt" in path_str:
             return True
-        if "absent_blocker.txt" in path_str:
-            return False
-        if "missing_dependency.txt" in path_str:
-            return False
         if "present_blocker.txt" in path_str:
             return True
             
-        return True
+        # Files that MUST NOT exist (absent_blocker.txt, missing_dependency.txt)
+        # should return False, which is the default below.
+        
+        return False # Fallback: assume file does not exist
 
     with patch("src.controller.validate"), \
          patch("pathlib.Path.exists", side_effect=custom_exists_side_effect), \
