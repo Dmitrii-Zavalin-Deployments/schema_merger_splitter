@@ -1,4 +1,4 @@
-# 🌊 Bernoulli Solver Performance Audit
+# 🧩 Schema‑Merger‑Splitter Performance Audit
 
 ### Audit: 2026-06-10 19:56:09 UTC
 - **Branch:** `main`
