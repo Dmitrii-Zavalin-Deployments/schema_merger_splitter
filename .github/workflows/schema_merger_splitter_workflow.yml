@@ -190,7 +190,8 @@ jobs:
 
       - name: 🧩 Execute Schema‑Merger‑Splitter
         run: |
-          python3 src/main.py
+          # Simply run as a module from the root
+          python3 -m src.main
 
       - name: 📤 Synchronize Results (Dropbox)
         if: success()
