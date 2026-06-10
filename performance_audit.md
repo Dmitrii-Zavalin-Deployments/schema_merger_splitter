@@ -1,4 +1,11 @@
-# 🧩 Schema‑Merger‑Splitter Performance Audit
+# 🌊 Bernoulli Solver Performance Audit
+
+### Audit: 2026-06-10 20:09:17 UTC
+- **Branch:** `main`
+- **Status:** failure
+- **CPU Load:** 9.1%
+- **Memory Usage:** 966/15989MB
+---
 
 ### Audit: 2026-06-10 19:56:09 UTC
 - **Branch:** `main`
