@@ -235,7 +235,9 @@ class TestPipelineUnified(PipelineUnifiedTestSignature):
         config = {"runs": [{"requires_all": [], "requires_none": [], "input_file": str(tmp_path / "missing_input.json"), "output_assembler_file": str(tmp_path / "final.json")}]}
         config_path = tmp_path / "config.json"
         self._write_json(config_path, config)
-        assert controller.load_and_evaluate_config(config_path) == []
+        runs = controller.load_and_evaluate_config(config_path)
+        with pytest.raises(Exception):
+            controller.load_input_file(runs[0][0])
 
     def test_sensitivity_malformed_json(self, tmp_path):
         controller = SchemaMergerSplitterController()
@@ -252,7 +254,9 @@ class TestPipelineUnified(PipelineUnifiedTestSignature):
         self._write_json(config_path, config)
         bad_input = tmp_path / "bad_input.json"
         bad_input.write_text("{not valid json")
-        assert controller.load_and_evaluate_config(config_path) == []
+        runs = controller.load_and_evaluate_config(config_path)
+        with pytest.raises(Exception):
+            controller.load_input_file(runs[0][0])
 
     def test_sensitivity_invalid_jsonpath(self, tmp_path):
         controller = SchemaMergerSplitterController()
