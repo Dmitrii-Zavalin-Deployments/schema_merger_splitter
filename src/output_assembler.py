@@ -18,7 +18,7 @@ class SchemaMergerSplitterOutputAssembler(SchemaMergerSplitterOutputAssemblerInt
                  Validate against Output Schema
                  Write final assembled output file
 
-    No additional public methods or attributes are introduced.
+    No defaults are introduced. All required fields must be provided explicitly.
     """
 
     # ------------------------------------------------------------
@@ -37,30 +37,55 @@ class SchemaMergerSplitterOutputAssembler(SchemaMergerSplitterOutputAssemblerInt
         Validate this object against the frozen Output Schema and write it
         to the file specified by output_assembler_file.
         """
-        base_dir = Path(__file__).resolve().parents[1]
 
-        # Construct final assembled object
+        # ------------------------------------------------------------
+        # 1. Enforce required fields BEFORE schema validation
+        # ------------------------------------------------------------
+        if inputs is None:
+            raise ValueError("Final output assembly error: 'inputs' must not be None.")
+        if config is None:
+            raise ValueError("Final output assembly error: 'config' must not be None.")
+        if results is None:
+            raise ValueError("Final output assembly error: 'results' must not be None.")
+
+        if not isinstance(inputs, dict):
+            raise ValueError("Final output assembly error: 'inputs' must be a dict.")
+        if not isinstance(config, dict):
+            raise ValueError("Final output assembly error: 'config' must be a dict.")
+        if not isinstance(results, dict):
+            raise ValueError("Final output assembly error: 'results' must be a dict.")
+
+        # ------------------------------------------------------------
+        # 2. Construct final assembled object
+        # ------------------------------------------------------------
         assembled = {
             "inputs": inputs,
             "config": config,
             "results": results,
         }
 
-        # Load Output Schema
+        # ------------------------------------------------------------
+        # 3. Validate against frozen Output Schema
+        # ------------------------------------------------------------
+        base_dir = Path(__file__).resolve().parents[1]
         schema_path = base_dir / "schema" / "schema_merger_splitter_output_schema.json"
+
         with schema_path.open("r", encoding="utf-8") as f:
             schema = json.load(f)
 
-        # Validate assembled object
         validate(instance=assembled, schema=schema)
 
-        # Normalize output path
+        # ------------------------------------------------------------
+        # 4. Normalize output path
+        # ------------------------------------------------------------
         output_path = Path(output_assembler_file)
         if not output_path.is_absolute():
             output_path = base_dir / output_assembler_file
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        # Write final assembled output file
+        # ------------------------------------------------------------
+        # 5. Write final assembled output file
+        # ------------------------------------------------------------
         with output_path.open("w", encoding="utf-8") as f:
             json.dump(assembled, f, indent=2)

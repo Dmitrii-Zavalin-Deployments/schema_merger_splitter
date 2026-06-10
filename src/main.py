@@ -52,7 +52,13 @@ def main():
     # Stage 1 — Build run list using the controller
     # ------------------------------------------------------------
     controller = SchemaMergerSplitterController()
+
+    # Load + validate config
     runs = controller.load_and_evaluate_config(config_path)
+
+    # Load the validated config JSON itself (no defaults allowed)
+    with config_path.open("r", encoding="utf-8") as f:
+        validated_config = json.load(f)
 
     if not runs:
         logger.info("No runs activated by config conditions.")
@@ -75,6 +81,10 @@ def main():
 
         # Steps 3–6 — Orchestrator
         orchestrator = SchemaMergerSplitterOrchestrator()
+
+        # Inject validated config BEFORE run()
+        orchestrator._config = validated_config
+
         success, errors = orchestrator.run(input_json_instance)
 
         logger.info(f"Run success: {success}")
@@ -87,7 +97,7 @@ def main():
         assembler = SchemaMergerSplitterOutputAssembler()
         assembler.assemble_final_output(
             artifacts["inputs"],
-            artifacts["config"],   # currently None until config is passed through
+            artifacts["config"],   # now a validated config object
             artifacts["results"],
             output_assembler_file
         )

@@ -22,7 +22,7 @@ class SchemaMergerSplitterOrchestrator(SchemaMergerSplitterOrchestratorInterface
         Step 7  — Expose execution artifacts
         run()   — Execute Steps 2–6 in strict order
 
-    No additional public methods or attributes are introduced.
+    No defaults are introduced. The controller MUST inject a validated config.
     """
 
     # ------------------------------------------------------------
@@ -99,8 +99,7 @@ class SchemaMergerSplitterOrchestrator(SchemaMergerSplitterOrchestratorInterface
             source_json = loaded_sources.get(filename)
 
             if source_json is None:
-                # Missing file already recorded in Step 3
-                continue
+                continue  # Missing file already recorded
 
             for mapping in mappings:
                 jsonpath_expr = mapping["from"]
@@ -119,7 +118,9 @@ class SchemaMergerSplitterOrchestrator(SchemaMergerSplitterOrchestratorInterface
                     continue
 
                 if not matches:
-                    errors.append(f"Missing field for JSONPath '{jsonpath_expr}' in '{filename}'")
+                    errors.append(
+                        f"Missing field for JSONPath '{jsonpath_expr}' in '{filename}'"
+                    )
                     continue
 
                 # JSONPath may return multiple values; use the first
@@ -176,7 +177,15 @@ class SchemaMergerSplitterOrchestrator(SchemaMergerSplitterOrchestratorInterface
         # Store for Step 7
         self._results = results_obj
         self._inputs = input_json_instance
-        self._config = None  # Filled by controller → orchestrator integration
+
+        # IMPORTANT:
+        # The controller MUST inject a validated config before Step 7 is used.
+        # No defaults are allowed.
+        if not hasattr(self, "_config"):
+            raise RuntimeError(
+                "Orchestrator missing validated config. "
+                "Controller must set orchestrator._config before artifacts are requested."
+            )
 
     # ------------------------------------------------------------
     # Step 7 — Expose execution artifacts
@@ -192,7 +201,7 @@ class SchemaMergerSplitterOrchestrator(SchemaMergerSplitterOrchestratorInterface
         """
         return {
             "inputs": self._inputs,
-            "config": self._config,
+            "config": self._config,  # MUST be injected by controller
             "results": self._results,
         }
 
@@ -210,7 +219,9 @@ class SchemaMergerSplitterOrchestrator(SchemaMergerSplitterOrchestratorInterface
         loaded_sources, load_errors = self.load_source_files(input_json_instance)
 
         # Step 4 — Execute copy operations
-        merged_output, copy_errors = self.execute_copy_operations(loaded_sources, input_json_instance)
+        merged_output, copy_errors = self.execute_copy_operations(
+            loaded_sources, input_json_instance
+        )
 
         all_errors = load_errors + copy_errors
         success = len(all_errors) == 0

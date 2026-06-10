@@ -16,9 +16,7 @@ class SchemaMergerSplitterController(SchemaMergerSplitterControllerInterface):
         Step 1 — Load and evaluate config/config.json
         Step 2 — Load the merger‑splitter input file
 
-    This class inherits directly and exclusively from
-    SchemaMergerSplitterControllerInterface and introduces no additional
-    public methods or attributes.
+    No defaults are introduced. All required fields must be present.
     """
 
     # ------------------------------------------------------------
@@ -56,19 +54,39 @@ class SchemaMergerSplitterController(SchemaMergerSplitterControllerInterface):
 
         validate(instance=config_data, schema=config_schema)
 
-        runs = config_data.get("runs", [])
+        # REQUIRED: "runs" must exist and must be a list
+        if "runs" not in config_data:
+            raise ValueError("Config missing required field 'runs'.")
+
+        runs = config_data["runs"]
         if not isinstance(runs, list):
-            raise ValueError("Config 'runs' must be a list.")
+            raise ValueError("Config field 'runs' must be a list.")
 
         activated_runs = []
 
         for run in runs:
-            requires_all = run.get("requires_all", [])
-            requires_none = run.get("requires_none", [])
+            # REQUIRED fields — no defaults allowed
+            if "requires_all" not in run:
+                raise ValueError("Config run missing required field 'requires_all'.")
+            if "requires_none" not in run:
+                raise ValueError("Config run missing required field 'requires_none'.")
+            if "input_file" not in run:
+                raise ValueError("Config run missing required field 'input_file'.")
+            if "output_assembler_file" not in run:
+                raise ValueError("Config run missing required field 'output_assembler_file'.")
+
+            requires_all = run["requires_all"]
+            requires_none = run["requires_none"]
             input_file = run["input_file"]
             output_assembler_file = run["output_assembler_file"]
 
-            # Evaluate requires_all: all listed files must exist
+            # Type checks (schema already enforces, but explicit is safer)
+            if not isinstance(requires_all, list):
+                raise ValueError("'requires_all' must be a list.")
+            if not isinstance(requires_none, list):
+                raise ValueError("'requires_none' must be a list.")
+
+            # Evaluate requires_all
             all_ok = True
             for rel_path in requires_all:
                 candidate = base_dir / rel_path
@@ -76,7 +94,7 @@ class SchemaMergerSplitterController(SchemaMergerSplitterControllerInterface):
                     all_ok = False
                     break
 
-            # Evaluate requires_none: none of the listed files may exist
+            # Evaluate requires_none
             none_ok = True
             for rel_path in requires_none:
                 candidate = base_dir / rel_path
@@ -119,6 +137,12 @@ class SchemaMergerSplitterController(SchemaMergerSplitterControllerInterface):
             input_schema = json.load(f)
 
         validate(instance=input_data, schema=input_schema)
+
+        # REQUIRED fields — no defaults allowed
+        if "output_filename" not in input_data:
+            raise ValueError("Input JSON missing required field 'output_filename'.")
+        if "sources" not in input_data:
+            raise ValueError("Input JSON missing required field 'sources'.")
 
         output_filename = input_data["output_filename"]
         sources = input_data["sources"]
