@@ -378,6 +378,7 @@ class TestPipelineUnified(PipelineUnifiedTestSignature):
             runs = controller.load_and_evaluate_config(tmp_path / "config.json")
             input_file, output_file = runs[0]
             output_filename, sources = controller.load_input_file(input_file)
+
             success, errors = orchestrator.run(
                 {"output_filename": output_filename, "sources": sources}
             )
@@ -386,13 +387,20 @@ class TestPipelineUnified(PipelineUnifiedTestSignature):
 
             self._inject_run_config_into_orchestrator(orchestrator, input_file, output_file)
             artifacts = orchestrator.get_execution_artifacts()
+
+            # FIX — wrap output_file in Path()
             assembler.assemble_final_output(
-                artifacts["inputs"], artifacts["config"], artifacts["results"], output_file
+                artifacts["inputs"],
+                artifacts["config"],
+                artifacts["results"],
+                Path(output_file),
             )
+
+            # FIX — wrap output_file in Path()
             return (
                 self._load_json("data/testing-input-output/merged.json"),
                 self._load_json("data/testing-input-output/merged.json.results.json"),
-                self._load_json(output_file),
+                self._load_json(Path(output_file)),
             )
 
         out1, res1, final1 = run_once()
@@ -489,11 +497,17 @@ class TestPipelineUnified(PipelineUnifiedTestSignature):
         self._inject_run_config_into_orchestrator(orchestrator, input_file, output_file)
         artifacts = orchestrator.get_execution_artifacts()
 
+        # FIX — wrap output_file in Path()
         assembler.assemble_final_output(
-            artifacts["inputs"], artifacts["config"], artifacts["results"], output_file
+            artifacts["inputs"],
+            artifacts["config"],
+            artifacts["results"],
+            Path(output_file),
         )
 
-        final = self._load_json(output_file)
+        # FIX — wrap output_file in Path()
+        final = self._load_json(Path(output_file))
+
         assert set(final.keys()) == {"inputs", "config", "results"}
 
     def test_consistent_run_order(self, tmp_path):
