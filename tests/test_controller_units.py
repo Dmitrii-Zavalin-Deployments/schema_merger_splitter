@@ -201,9 +201,12 @@ def test_config_conditional_evaluation_branches():
         ]
     }
 
-    def custom_exists_side_effect(self_path):
-        # Simulate dynamic filesystem statuses for checking conditions
+    def custom_exists_side_effect(*args):
+        # args[0] will be the instance (the Path object)
+        self_path = args[0]
         path_str = str(self_path)
+        
+        # Simulate dynamic filesystem statuses for checking conditions
         if "present_dependency.txt" in path_str:
             return True
         if "absent_blocker.txt" in path_str:
@@ -212,7 +215,7 @@ def test_config_conditional_evaluation_branches():
             return False
         if "present_blocker.txt" in path_str:
             return True
-        return True  # fallback rule for schema matching resolutions
+        return True
 
     with patch("src.controller.validate"), \
          patch("pathlib.Path.exists", side_effect=custom_exists_side_effect), \
