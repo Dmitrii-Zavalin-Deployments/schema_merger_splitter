@@ -1,5 +1,6 @@
 # tests/test_orchestrator.py
 
+import os
 import json
 from pathlib import Path
 import pytest
@@ -36,6 +37,8 @@ class TestOrchestrator(OrchestratorTestSignature):
 
     def test_input_schema_validation(self, tmp_path):
         orch = SchemaMergerSplitterOrchestrator()
+        # Repair: Cleanup persistent file to avoid false positives
+        if os.path.exists("data/testing-input-output/out.json"): os.remove("data/testing-input-output/out.json")
 
         # Valid input
         valid = self._make_input()
@@ -48,6 +51,8 @@ class TestOrchestrator(OrchestratorTestSignature):
 
     def test_input_validation_error_propagation(self, tmp_path):
         orch = SchemaMergerSplitterOrchestrator()
+        # Repair: Cleanup persistent file to avoid false positives
+        if os.path.exists("data/testing-input-output/out.json"): os.remove("data/testing-input-output/out.json")
 
         invalid = {"not_output_filename": "x"}
         with pytest.raises(Exception):
@@ -59,6 +64,8 @@ class TestOrchestrator(OrchestratorTestSignature):
 
     def test_source_file_loading(self, tmp_path):
         orch = SchemaMergerSplitterOrchestrator()
+        # Repair: Cleanup persistent file to avoid false positives
+        if os.path.exists("data/testing-input-output/out.json"): os.remove("data/testing-input-output/out.json")
 
         # Create a valid source file
         src = tmp_path / "src.json"
@@ -73,6 +80,8 @@ class TestOrchestrator(OrchestratorTestSignature):
 
     def test_missing_source_file_handling(self, tmp_path):
         orch = SchemaMergerSplitterOrchestrator()
+        # Repair: Cleanup persistent file to avoid false positives
+        if os.path.exists("data/testing-input-output/out.json"): os.remove("data/testing-input-output/out.json")
 
         missing = tmp_path / "missing.json"
         input_json = self._make_input(sources={str(missing): []})
@@ -83,6 +92,8 @@ class TestOrchestrator(OrchestratorTestSignature):
 
     def test_unreadable_source_file_handling(self, tmp_path):
         orch = SchemaMergerSplitterOrchestrator()
+        # Repair: Cleanup persistent file to avoid false positives
+        if os.path.exists("data/testing-input-output/out.json"): os.remove("data/testing-input-output/out.json")
 
         bad = tmp_path / "bad.json"
         bad.write_text("{not valid json")
@@ -95,6 +106,8 @@ class TestOrchestrator(OrchestratorTestSignature):
 
     def test_loaded_sources_structure(self, tmp_path):
         orch = SchemaMergerSplitterOrchestrator()
+        # Repair: Cleanup persistent file to avoid false positives
+        if os.path.exists("data/testing-input-output/out.json"): os.remove("data/testing-input-output/out.json")
 
         src = tmp_path / "src.json"
         self._write_json(src, {"x": 1})
@@ -111,6 +124,8 @@ class TestOrchestrator(OrchestratorTestSignature):
 
     def test_jsonpath_evaluation(self, tmp_path):
         orch = SchemaMergerSplitterOrchestrator()
+        # Repair: Cleanup persistent file to avoid false positives
+        if os.path.exists("data/testing-input-output/out.json"): os.remove("data/testing-input-output/out.json")
 
         src = tmp_path / "src.json"
         self._write_json(src, {"a": {"b": 5}})
@@ -127,6 +142,8 @@ class TestOrchestrator(OrchestratorTestSignature):
 
     def test_missing_jsonpath_field(self, tmp_path):
         orch = SchemaMergerSplitterOrchestrator()
+        # Repair: Cleanup persistent file to avoid false positives
+        if os.path.exists("data/testing-input-output/out.json"): os.remove("data/testing-input-output/out.json")
 
         src = tmp_path / "src.json"
         self._write_json(src, {"a": 1})
@@ -143,6 +160,8 @@ class TestOrchestrator(OrchestratorTestSignature):
 
     def test_duplicate_to_key_detection(self, tmp_path):
         orch = SchemaMergerSplitterOrchestrator()
+        # Repair: Cleanup persistent file to avoid false positives
+        if os.path.exists("data/testing-input-output/out.json"): os.remove("data/testing-input-output/out.json")
 
         src = tmp_path / "src.json"
         self._write_json(src, {"a": 1, "b": 2})
@@ -164,6 +183,8 @@ class TestOrchestrator(OrchestratorTestSignature):
 
     def test_merged_output_structure(self, tmp_path):
         orch = SchemaMergerSplitterOrchestrator()
+        # Repair: Cleanup persistent file to avoid false positives
+        if os.path.exists("data/testing-input-output/out.json"): os.remove("data/testing-input-output/out.json")
 
         src = tmp_path / "src.json"
         self._write_json(src, {"a": 1})
@@ -180,6 +201,8 @@ class TestOrchestrator(OrchestratorTestSignature):
 
     def test_copy_operation_error_accumulation(self, tmp_path):
         orch = SchemaMergerSplitterOrchestrator()
+        # Repair: Cleanup persistent file to avoid false positives
+        if os.path.exists("data/testing-input-output/out.json"): os.remove("data/testing-input-output/out.json")
 
         src = tmp_path / "src.json"
         self._write_json(src, {"a": 1})
@@ -204,6 +227,8 @@ class TestOrchestrator(OrchestratorTestSignature):
 
     def test_merged_output_write_success(self, tmp_path):
         orch = SchemaMergerSplitterOrchestrator()
+        # Repair: Cleanup persistent file to avoid false positives
+        if os.path.exists("data/testing-input-output/out.json"): os.remove("data/testing-input-output/out.json")
 
         src = tmp_path / "src.json"
         self._write_json(src, {"a": 1})
@@ -221,6 +246,8 @@ class TestOrchestrator(OrchestratorTestSignature):
 
     def test_merged_output_write_skipped_on_errors(self, tmp_path):
         orch = SchemaMergerSplitterOrchestrator()
+        # Repair: Cleanup persistent file to avoid false positives
+        if os.path.exists("data/testing-input-output/out.json"): os.remove("data/testing-input-output/out.json")
 
         src = tmp_path / "src.json"
         self._write_json(src, {"a": 1})
@@ -242,6 +269,8 @@ class TestOrchestrator(OrchestratorTestSignature):
 
     def test_results_json_written_always(self, tmp_path):
         orch = SchemaMergerSplitterOrchestrator()
+        # Repair: Cleanup persistent file to avoid false positives
+        if os.path.exists("data/testing-input-output/out.json"): os.remove("data/testing-input-output/out.json")
 
         input_json = self._make_input(
             output_filename="x.json",
@@ -255,6 +284,8 @@ class TestOrchestrator(OrchestratorTestSignature):
 
     def test_results_json_success_flag(self, tmp_path):
         orch = SchemaMergerSplitterOrchestrator()
+        # Repair: Cleanup persistent file to avoid false positives
+        if os.path.exists("data/testing-input-output/out.json"): os.remove("data/testing-input-output/out.json")
 
         # success case
         src = tmp_path / "src.json"
@@ -279,6 +310,8 @@ class TestOrchestrator(OrchestratorTestSignature):
 
     def test_results_json_error_list(self, tmp_path):
         orch = SchemaMergerSplitterOrchestrator()
+        # Repair: Cleanup persistent file to avoid false positives
+        if os.path.exists("data/testing-input-output/out.json"): os.remove("data/testing-input-output/out.json")
 
         src = tmp_path / "src.json"
         self._write_json(src, {"a": 1})
@@ -297,6 +330,8 @@ class TestOrchestrator(OrchestratorTestSignature):
 
     def test_get_execution_artifacts_structure(self, tmp_path):
         orch = SchemaMergerSplitterOrchestrator()
+        # Repair: Cleanup persistent file to avoid false positives
+        if os.path.exists("data/testing-input-output/out.json"): os.remove("data/testing-input-output/out.json")
 
         input_json = self._make_input()
         orch.run(input_json)
@@ -306,6 +341,8 @@ class TestOrchestrator(OrchestratorTestSignature):
 
     def test_execution_artifacts_schema_alignment(self, tmp_path):
         orch = SchemaMergerSplitterOrchestrator()
+        # Repair: Cleanup persistent file to avoid false positives
+        if os.path.exists("data/testing-input-output/out.json"): os.remove("data/testing-input-output/out.json")
 
         input_json = self._make_input()
         orch.run(input_json)
@@ -320,6 +357,8 @@ class TestOrchestrator(OrchestratorTestSignature):
 
     def test_run_executes_steps_in_order(self, tmp_path):
         orch = SchemaMergerSplitterOrchestrator()
+        # Repair: Cleanup persistent file to avoid false positives
+        if os.path.exists("data/testing-input-output/out.json"): os.remove("data/testing-input-output/out.json")
 
         src = tmp_path / "src.json"
         self._write_json(src, {"a": 1})
@@ -344,6 +383,8 @@ class TestOrchestrator(OrchestratorTestSignature):
 
     def test_sensitivity_missing_files(self, tmp_path):
         orch = SchemaMergerSplitterOrchestrator()
+        # Repair: Cleanup persistent file to avoid false positives
+        if os.path.exists("data/testing-input-output/out.json"): os.remove("data/testing-input-output/out.json")
 
         missing = tmp_path / "missing.json"
         input_json = self._make_input(sources={str(missing): []})
@@ -354,6 +395,8 @@ class TestOrchestrator(OrchestratorTestSignature):
 
     def test_sensitivity_malformed_json(self, tmp_path):
         orch = SchemaMergerSplitterOrchestrator()
+        # Repair: Cleanup persistent file to avoid false positives
+        if os.path.exists("data/testing-input-output/out.json"): os.remove("data/testing-input-output/out.json")
 
         bad = tmp_path / "bad.json"
         bad.write_text("{not valid json")
@@ -366,6 +409,8 @@ class TestOrchestrator(OrchestratorTestSignature):
 
     def test_sensitivity_invalid_jsonpath(self, tmp_path):
         orch = SchemaMergerSplitterOrchestrator()
+        # Repair: Cleanup persistent file to avoid false positives
+        if os.path.exists("data/testing-input-output/out.json"): os.remove("data/testing-input-output/out.json")
 
         src = tmp_path / "src.json"
         self._write_json(src, {"a": 1})
@@ -384,6 +429,8 @@ class TestOrchestrator(OrchestratorTestSignature):
 
     def test_deterministic_copy_operations(self, tmp_path):
         orch = SchemaMergerSplitterOrchestrator()
+        # Repair: Cleanup persistent file to avoid false positives
+        if os.path.exists("data/testing-input-output/out.json"): os.remove("data/testing-input-output/out.json")
 
         src = tmp_path / "src.json"
         self._write_json(src, {"a": 1})
@@ -404,6 +451,8 @@ class TestOrchestrator(OrchestratorTestSignature):
 
     def test_deterministic_results_json(self, tmp_path):
         orch = SchemaMergerSplitterOrchestrator()
+        # Repair: Cleanup persistent file to avoid false positives
+        if os.path.exists("data/testing-input-output/out.json"): os.remove("data/testing-input-output/out.json")
 
         input_json = self._make_input(sources={})
 
@@ -419,6 +468,8 @@ class TestOrchestrator(OrchestratorTestSignature):
 
     def test_no_hidden_state(self, tmp_path):
         orch = SchemaMergerSplitterOrchestrator()
+        # Repair: Cleanup persistent file to avoid false positives
+        if os.path.exists("data/testing-input-output/out.json"): os.remove("data/testing-input-output/out.json")
 
         input_json = self._make_input()
         orch.run(input_json)
@@ -429,6 +480,8 @@ class TestOrchestrator(OrchestratorTestSignature):
 
     def test_no_mutation_of_inputs(self, tmp_path):
         orch = SchemaMergerSplitterOrchestrator()
+        # Repair: Cleanup persistent file to avoid false positives
+        if os.path.exists("data/testing-input-output/out.json"): os.remove("data/testing-input-output/out.json")
 
         input_json = self._make_input(
             sources={"file.json": [{"from": "$.a", "to": "A"}]}
