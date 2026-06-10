@@ -208,7 +208,10 @@ def test_config_conditional_evaluation_branches():
         self_path = args[0]
         path_str = str(self_path)
         
-        # Whitelist the configuration file itself so the controller can load it
+        
+        print(f"DEBUG: Mock checking path: {path_str}")
+        
+        # Whitelist the configuration file
         if "config.json" in path_str:
             return True
 
@@ -218,7 +221,6 @@ def test_config_conditional_evaluation_branches():
         if "present_blocker.txt" in path_str:
             return True
             
-        # Default fallback: files do not exist (covers missing paths and requires_none blockers)
         return False
 
     with patch("src.controller.validate"), \
