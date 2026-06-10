@@ -5,7 +5,6 @@ from pathlib import Path
 import pytest
 
 from tests.signatures.orchestrator_test_signature import OrchestratorTestSignature
-from tests.dummies.execution_artifacts_dummy import ExecutionArtifactsDummy
 
 from src.orchestrator import SchemaMergerSplitterOrchestrator
 

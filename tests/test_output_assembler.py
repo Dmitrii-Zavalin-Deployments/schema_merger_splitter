@@ -202,7 +202,7 @@ class TestOutputAssembler(OutputAssemblerTestSignature):
     # ------------------------------------------------------------
 
     def test_deterministic_assembly(self, tmp_path):
-        assembler = SchemaMergerSplitterOutputAssembler()
+        SchemaMergerSplitterOutputAssembler()
         dummy = ExecutionArtifactsDummy()
 
         assembled1 = {

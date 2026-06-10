@@ -5,7 +5,6 @@ from pathlib import Path
 import pytest
 
 from tests.signatures.pipeline_unified_test_signature import PipelineUnifiedTestSignature
-from tests.dummies.execution_artifacts_dummy import ExecutionArtifactsDummy
 
 from src.controller import SchemaMergerSplitterController
 from src.orchestrator import SchemaMergerSplitterOrchestrator

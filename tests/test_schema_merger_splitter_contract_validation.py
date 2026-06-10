@@ -8,7 +8,6 @@ from jsonschema import validate, ValidationError
 from tests.signatures.schema_merger_splitter_contract_validation import (
     SchemaMergerSplitterContractValidation,
 )
-from tests.dummies.execution_artifacts_dummy import ExecutionArtifactsDummy
 
 
 class TestSchemaMergerSplitterContractValidation(SchemaMergerSplitterContractValidation):
