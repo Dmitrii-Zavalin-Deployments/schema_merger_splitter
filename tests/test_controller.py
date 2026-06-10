@@ -1,13 +1,11 @@
 # tests/test_controller.py
 
 import json
-import os
 from pathlib import Path
 
 import pytest
 
 from tests.signatures.controller_test_signature import ControllerTestSignature
-from tests.dummies.execution_artifacts_dummy import ExecutionArtifactsDummy
 
 from src.controller import SchemaMergerSplitterController
 
