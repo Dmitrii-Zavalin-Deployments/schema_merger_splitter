@@ -4,63 +4,54 @@ set -euo pipefail
 echo "=== FORENSIC AUDIT: START ==="
 
 echo
-echo "=== 1. Search for places where config may become None ==="
-grep -RIn --color=always 'config' src || true
-grep -RIn --color=always 'config' tests || true
-grep -RIn --color=always 'None' src || true
+echo "=== 1. Search for undefined 'json' usage across src/ ==="
+grep -RIn --color=always 'json\.load' src || true
+grep -RIn --color=always 'json\.dump' src || true
+grep -RIn --color=always 'json' src/main.py || true
 
 echo
-echo "=== 2. Search for pipeline output JSONs produced during tests ==="
-find . -maxdepth 4 -type f -name "*.json" | sort
+echo "=== 2. Search for missing 'import json' statements ==="
+grep -RIn --color=always '^import json' src || true
+grep -RIn --color=always '^from .* import json' src || true
 
 echo
-echo "=== 3. Dump pipeline-unified test output (if exists) ==="
-if [ -f data/testing-input-output/final.json ]; then
-    echo "--- final.json ---"
-    cat -n data/testing-input-output/final.json
-fi
-
-if [ -f data/testing-input-output/results.json ]; then
-    echo "--- results.json ---"
-    cat -n data/testing-input-output/results.json
+echo "=== 3. Show numbered source for main.py (smoking gun) ==="
+if [ -f src/main.py ]; then
+    echo "--- FILE: src/main.py ---"
+    cat -n src/main.py
 fi
 
 echo
-echo "=== 4. Locate the smoking gun: where config=None is created ==="
-grep -RIn --color=always 'config = None' src || true
-grep -RIn --color=always '"config": None' -R . || true
+echo "=== 4. Show context around all json.load calls (safe extraction) ==="
 
-echo
-echo "=== 5. Show full context around pipeline-unified test ==="
-TARGET="tests/test_pipeline_unified.py"
-if [ -f "$TARGET" ]; then
-    echo "--- FILE: $TARGET ---"
-    cat -n "$TARGET"
-fi
+for f in $(grep -RIl 'json\.load' src); do
+    echo "--- FILE: $f ---"
 
-echo
-echo "=== 6. Show orchestrator + pipeline sources (numbered) ==="
-for f in src/orchestrator.py src/pipeline_unified.py src/*pipeline*.py; do
-    if [ -f "$f" ]; then
-        echo "--- FILE: $f ---"
-        cat -n "$f"
-    fi
+    grep -RIn 'json\.load' "$f" | while IFS=: read -r file ln rest; do
+        # Skip non-numeric line numbers
+        if ! [[ "$ln" =~ ^[0-9]+$ ]]; then
+            continue
+        fi
+
+        echo "--- $f : line $ln ---"
+        start=$((ln-3))
+        end=$((ln+3))
+        sed -n "${start},${end}p" "$f"
+    done
+
 done
 
 echo
-echo "=== 7. Proposed automated repair templates (commented out) ==="
-echo "# If config is missing, replace None with {}"
-echo "# sed -i \"s/'config': None/'config': {}/\" src/pipeline_unified.py"
+echo "=== 5. Proposed automated repair templates (commented out) ==="
+echo "# If main.py is missing 'import json', insert it after the first import block"
+echo "# sed -i '1,/^from / s/^from /import json\\n&/' src/main.py"
 echo
-echo "# If pipeline returns config=None, force {}"
-echo "# sed -i \"s/config = None/config = {}/\" src/pipeline_unified.py"
-echo
-echo "# If final output builder inserts config=None, rewrite to {}"
-echo "# sed -i \"s/\\\"config\\\": None/\\\"config\\\": {}/\" src/pipeline_unified.py"
+echo "# Alternatively, insert at top of file:"
+echo "# sed -i '1s/^/import json\\n/' src/main.py"
 
 echo
-echo "=== 8. Diff preview for the first sed (non-destructive) ==="
-echo "# sed \"s/'config': None/'config': {}/\" src/pipeline_unified.py | diff -u src/pipeline_unified.py -"
+echo "=== 6. Diff preview for the first sed (non-destructive) ==="
+echo "# sed '1,/^from / s/^from /import json\\n&/' src/main.py | diff -u src/main.py -"
 
 echo
 echo "=== FORENSIC AUDIT: END ==="

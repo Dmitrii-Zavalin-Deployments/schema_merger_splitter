@@ -26,6 +26,7 @@ instantiate and connect the components.
 
 import logging
 from pathlib import Path
+import json
 
 from controller import SchemaMergerSplitterController
 from orchestrator import SchemaMergerSplitterOrchestrator
