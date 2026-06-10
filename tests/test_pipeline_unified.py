@@ -171,7 +171,7 @@ class TestPipelineUnified(PipelineUnifiedTestSignature):
         assert Path(output_file).exists()
 
     def test_pipeline_failure_case(self, tmp_path):
-        import os; p = Path("data/testing-input-output/merged.json"); p.unlink() if p.exists() else None
+        p = Path("data/testing-input-output/merged.json"); p.unlink() if p.exists() else None
         """
         Failure must skip merged output but still write results + final output.
         """
