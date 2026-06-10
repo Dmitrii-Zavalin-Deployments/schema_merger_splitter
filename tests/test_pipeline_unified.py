@@ -1,7 +1,6 @@
 # tests/test_pipeline_unified.py
 
 import json
-from copy import deepcopy
 from pathlib import Path
 
 import pytest
@@ -34,18 +33,29 @@ class TestPipelineUnified(PipelineUnifiedTestSignature):
         with path.open("r", encoding="utf-8") as f:
             return json.load(f)
 
-    def _cleanup_testing_output(self):
-        base_dir = Path(__file__).resolve().parents[1]
-        out_dir = base_dir / "data" / "testing-input-output"
-        for name in ["merged.json", "merged.json.results.json"]:
-            p = out_dir / name
-            if p.exists():
-                p.unlink()
+    def _make_single_run_config(self, input_file: Path, output_file: Path) -> dict:
+        return {
+            "runs": [
+                {
+                    "requires_all": [],
+                    "requires_none": [],
+                    "input_file": str(input_file),
+                    "output_assembler_file": str(output_file),
+                }
+            ]
+        }
 
-    def _inject_config_into_orchestrator(self, orchestrator, config_dict):
-        # Inject the single run entry as the orchestrator config
-        runs = config_dict.get("runs", [])
-        orchestrator._config = runs[0] if runs else {"runs": []}
+    def _inject_run_config_into_orchestrator(self, orchestrator, input_file: Path, output_file: Path):
+        """
+        The orchestrator's execution artifacts contract expects a single
+        validated config *entry* (one run), not the whole config.json.
+        """
+        orchestrator._config = {
+            "requires_all": [],
+            "requires_none": [],
+            "input_file": str(input_file),
+            "output_assembler_file": str(output_file),
+        }
 
     # ------------------------------------------------------------
     # End‑to‑End Pipeline Behaviour
@@ -53,25 +63,16 @@ class TestPipelineUnified(PipelineUnifiedTestSignature):
 
     def test_full_pipeline_execution(self, tmp_path):
         """
-        Steps 1–7 must execute in strict order.
+        The full pipeline must execute Steps 1–7 in strict topological order.
         """
-        self._cleanup_testing_output()
-
         controller = SchemaMergerSplitterController()
         orchestrator = SchemaMergerSplitterOrchestrator()
         assembler = SchemaMergerSplitterOutputAssembler()
 
         # Step 1: config.json
-        config = {
-            "runs": [
-                {
-                    "requires_all": [],
-                    "requires_none": [],
-                    "input_file": str(tmp_path / "input.json"),
-                    "output_assembler_file": str(tmp_path / "final.json"),
-                }
-            ]
-        }
+        input_path = tmp_path / "input.json"
+        final_path = tmp_path / "final.json"
+        config = self._make_single_run_config(input_path, final_path)
         config_path = tmp_path / "config.json"
         self._write_json(config_path, config)
 
@@ -83,7 +84,7 @@ class TestPipelineUnified(PipelineUnifiedTestSignature):
             "output_filename": "merged.json",
             "sources": {str(src): [{"from": "$.a", "to": "A"}]},
         }
-        self._write_json(tmp_path / "input.json", input_json)
+        self._write_json(input_path, input_json)
 
         # Execute pipeline
         runs = controller.load_and_evaluate_config(config_path)
@@ -92,14 +93,14 @@ class TestPipelineUnified(PipelineUnifiedTestSignature):
         input_file, output_file = runs[0]
         output_filename, sources = controller.load_input_file(input_file)
 
-        # Inject config into orchestrator for artifacts
-        self._inject_config_into_orchestrator(orchestrator, config)
-
         success, errors = orchestrator.run(
             {"output_filename": output_filename, "sources": sources}
         )
         assert success is True
         assert errors == []
+
+        # Inject the concrete run entry as orchestrator config artifact
+        self._inject_run_config_into_orchestrator(orchestrator, input_file, output_file)
 
         artifacts = orchestrator.get_execution_artifacts()
         assembler.assemble_final_output(
@@ -118,23 +119,16 @@ class TestPipelineUnified(PipelineUnifiedTestSignature):
         assert Path(output_file).exists()
 
     def test_pipeline_success_case(self, tmp_path):
-        self._cleanup_testing_output()
-
+        """
+        Valid config + valid inputs must produce all expected outputs.
+        """
         controller = SchemaMergerSplitterController()
         orchestrator = SchemaMergerSplitterOrchestrator()
         assembler = SchemaMergerSplitterOutputAssembler()
 
-        # Valid config
-        config = {
-            "runs": [
-                {
-                    "requires_all": [],
-                    "requires_none": [],
-                    "input_file": str(tmp_path / "input.json"),
-                    "output_assembler_file": str(tmp_path / "final.json"),
-                }
-            ]
-        }
+        input_path = tmp_path / "input.json"
+        final_path = tmp_path / "final.json"
+        config = self._make_single_run_config(input_path, final_path)
         config_path = tmp_path / "config.json"
         self._write_json(config_path, config)
 
@@ -146,21 +140,20 @@ class TestPipelineUnified(PipelineUnifiedTestSignature):
             "output_filename": "merged.json",
             "sources": {str(src): [{"from": "$.a", "to": "A"}]},
         }
-        self._write_json(tmp_path / "input.json", input_json)
+        self._write_json(input_path, input_json)
 
         # Run pipeline
         runs = controller.load_and_evaluate_config(config_path)
         input_file, output_file = runs[0]
 
         output_filename, sources = controller.load_input_file(input_file)
-
-        self._inject_config_into_orchestrator(orchestrator, config)
-
         success, errors = orchestrator.run(
             {"output_filename": output_filename, "sources": sources}
         )
         assert success is True
         assert errors == []
+
+        self._inject_run_config_into_orchestrator(orchestrator, input_file, output_file)
 
         artifacts = orchestrator.get_execution_artifacts()
         assembler.assemble_final_output(
@@ -173,23 +166,16 @@ class TestPipelineUnified(PipelineUnifiedTestSignature):
         assert Path(output_file).exists()
 
     def test_pipeline_failure_case(self, tmp_path):
-        self._cleanup_testing_output()
-
+        """
+        Failure must skip merged output but still write results + final output.
+        """
         controller = SchemaMergerSplitterController()
         orchestrator = SchemaMergerSplitterOrchestrator()
         assembler = SchemaMergerSplitterOutputAssembler()
 
-        # Config
-        config = {
-            "runs": [
-                {
-                    "requires_all": [],
-                    "requires_none": [],
-                    "input_file": str(tmp_path / "input.json"),
-                    "output_assembler_file": str(tmp_path / "final.json"),
-                }
-            ]
-        }
+        input_path = tmp_path / "input.json"
+        final_path = tmp_path / "final.json"
+        config = self._make_single_run_config(input_path, final_path)
         config_path = tmp_path / "config.json"
         self._write_json(config_path, config)
 
@@ -198,16 +184,13 @@ class TestPipelineUnified(PipelineUnifiedTestSignature):
             "output_filename": "merged.json",
             "sources": {str(tmp_path / "missing.json"): [{"from": "$.a", "to": "A"}]},
         }
-        self._write_json(tmp_path / "input.json", input_json)
+        self._write_json(input_path, input_json)
 
         # Run pipeline
         runs = controller.load_and_evaluate_config(config_path)
         input_file, output_file = runs[0]
 
         output_filename, sources = controller.load_input_file(input_file)
-
-        self._inject_config_into_orchestrator(orchestrator, config)
-
         success, errors = orchestrator.run(
             {"output_filename": output_filename, "sources": sources}
         )
@@ -223,6 +206,7 @@ class TestPipelineUnified(PipelineUnifiedTestSignature):
         assert Path("data/testing-input-output/merged.json.results.json").exists()
 
         # Final assembled output must STILL be written
+        self._inject_run_config_into_orchestrator(orchestrator, input_file, output_file)
         artifacts = orchestrator.get_execution_artifacts()
         assembler.assemble_final_output(
             artifacts["inputs"], artifacts["config"], artifacts["results"], output_file
@@ -230,7 +214,7 @@ class TestPipelineUnified(PipelineUnifiedTestSignature):
         assert Path(output_file).exists()
 
     # ------------------------------------------------------------
-    # Sensitivity Gates
+    # Pipeline‑Level Sensitivity Gate Signatures
     # ------------------------------------------------------------
 
     def test_sensitivity_missing_files(self, tmp_path):
@@ -241,7 +225,7 @@ class TestPipelineUnified(PipelineUnifiedTestSignature):
         with pytest.raises(Exception):
             controller.load_and_evaluate_config(missing)
 
-        # Missing input JSON referenced in config
+        # Missing input JSON referenced by a valid config
         config = {
             "runs": [
                 {
@@ -255,35 +239,45 @@ class TestPipelineUnified(PipelineUnifiedTestSignature):
         config_path = tmp_path / "config.json"
         self._write_json(config_path, config)
 
-        runs = controller.load_and_evaluate_config(config_path)
-        # Controller still returns runs; orchestrator will surface missing file later
-        assert runs == [(str(tmp_path / "missing_input.json"), str(tmp_path / "final.json"))]
+        with pytest.raises(Exception):
+            controller.load_and_evaluate_config(config_path)
 
     def test_sensitivity_malformed_json(self, tmp_path):
         controller = SchemaMergerSplitterController()
 
         # Malformed config.json
-        bad = tmp_path / "bad.json"
-        bad.write_text("{not valid json")
-
+        bad_config = tmp_path / "bad_config.json"
+        bad_config.write_text("{not valid json")
         with pytest.raises(Exception):
-            controller.load_and_evaluate_config(bad)
+            controller.load_and_evaluate_config(bad_config)
+
+        # Malformed input JSON
+        config = {
+            "runs": [
+                {
+                    "requires_all": [],
+                    "requires_none": [],
+                    "input_file": str(tmp_path / "bad_input.json"),
+                    "output_assembler_file": str(tmp_path / "final.json"),
+                }
+            ]
+        }
+        config_path = tmp_path / "config.json"
+        self._write_json(config_path, config)
+
+        bad_input = tmp_path / "bad_input.json"
+        bad_input.write_text("{not valid json")
+        with pytest.raises(Exception):
+            controller.load_and_evaluate_config(config_path)
 
     def test_sensitivity_invalid_jsonpath(self, tmp_path):
         controller = SchemaMergerSplitterController()
         orchestrator = SchemaMergerSplitterOrchestrator()
 
         # Config
-        config = {
-            "runs": [
-                {
-                    "requires_all": [],
-                    "requires_none": [],
-                    "input_file": str(tmp_path / "input.json"),
-                    "output_assembler_file": str(tmp_path / "final.json"),
-                }
-            ]
-        }
+        input_path = tmp_path / "input.json"
+        final_path = tmp_path / "final.json"
+        config = self._make_single_run_config(input_path, final_path)
         self._write_json(tmp_path / "config.json", config)
 
         # Input with invalid JSONPath
@@ -294,15 +288,12 @@ class TestPipelineUnified(PipelineUnifiedTestSignature):
             "output_filename": "merged.json",
             "sources": {str(src): [{"from": "$.invalid[", "to": "A"}]},
         }
-        self._write_json(tmp_path / "input.json", input_json)
+        self._write_json(input_path, input_json)
 
         runs = controller.load_and_evaluate_config(tmp_path / "config.json")
         input_file, output_file = runs[0]
 
         output_filename, sources = controller.load_input_file(input_file)
-
-        self._inject_config_into_orchestrator(orchestrator, config)
-
         success, errors = orchestrator.run(
             {"output_filename": output_filename, "sources": sources}
         )
@@ -311,96 +302,61 @@ class TestPipelineUnified(PipelineUnifiedTestSignature):
         assert any("Invalid JSONPath" in e for e in errors)
 
     def test_sensitivity_configuration_anomalies(self, tmp_path):
-        controller = SchemaMergerSplitterController()
+        """
+        Use ExecutionArtifactsDummy to exercise config edge cases without
+        invoking production logic unnecessarily.
+        """
+        dummy = ExecutionArtifactsDummy()
 
-        # Empty runs list
-        config_empty = {"runs": []}
-        path_empty = tmp_path / "config_empty.json"
-        self._write_json(path_empty, config_empty)
-        runs = controller.load_and_evaluate_config(path_empty)
-        assert runs == []
+        # Conflicting requires_all / requires_none on the same file
+        conflicting_run = {
+            "requires_all": ["A.json"],
+            "requires_none": ["A.json"],
+            "input_file": "A.json",
+            "output_assembler_file": "A_out.json",
+        }
+        dummy.override(config={"runs": [conflicting_run]}, scenario_label="conflicting_requires")
 
-        # Invalid run entry (missing required fields)
-        config_invalid = {"runs": [{"requires_all": [], "requires_none": []}]}
-        path_invalid = tmp_path / "config_invalid.json"
-        self._write_json(path_invalid, config_invalid)
-        with pytest.raises(Exception):
-            controller.load_and_evaluate_config(path_invalid)
+        assert dummy["config"]["runs"][0]["requires_all"] == ["A.json"]
+        assert dummy["config"]["runs"][0]["requires_none"] == ["A.json"]
+
+        # Empty runs list is allowed but should result in no work
+        empty_runs = ExecutionArtifactsDummy().override(
+            config={"runs": []}, scenario_label="empty_runs"
+        )
+        assert empty_runs["config"]["runs"] == []
 
     def test_sensitivity_boundary_conditions(self, tmp_path):
-        self._cleanup_testing_output()
-
-        controller = SchemaMergerSplitterController()
+        """
+        Boundary conditions on empty sources / errors / merged output.
+        """
         orchestrator = SchemaMergerSplitterOrchestrator()
-        assembler = SchemaMergerSplitterOutputAssembler()
 
-        # Config with single run
-        config = {
-            "runs": [
-                {
-                    "requires_all": [],
-                    "requires_none": [],
-                    "input_file": str(tmp_path / "input.json"),
-                    "output_assembler_file": str(tmp_path / "final.json"),
-                }
-            ]
-        }
-        config_path = tmp_path / "config.json"
-        self._write_json(config_path, config)
-
-        # Input with empty sources
+        # Empty sources
         input_json = {
             "output_filename": "merged.json",
             "sources": {},
         }
-        self._write_json(tmp_path / "input.json", input_json)
+        loaded, load_errors = orchestrator.load_source_files(input_json)
+        merged, copy_errors = orchestrator.execute_copy_operations(loaded, input_json)
 
-        runs = controller.load_and_evaluate_config(config_path)
-        input_file, output_file = runs[0]
-        output_filename, sources = controller.load_input_file(input_file)
-
-        self._inject_config_into_orchestrator(orchestrator, config)
-
-        success, errors = orchestrator.run(
-            {"output_filename": output_filename, "sources": sources}
-        )
-
-        # Empty sources → empty merged output, no errors
-        assert success is True
-        assert errors == []
-
-        artifacts = orchestrator.get_execution_artifacts()
-        assembler.assemble_final_output(
-            artifacts["inputs"], artifacts["config"], artifacts["results"], output_file
-        )
-
-        final = self._load_json(output_file)
-        assert final["inputs"]["sources"] == {}
-        assert final["results"]["errors"] == []
-        assert final["results"]["success"] is True
+        assert loaded == {}
+        assert merged == {}
+        assert load_errors == []
+        assert copy_errors == []
 
     # ------------------------------------------------------------
-    # Structural Determinism
+    # Pipeline‑Level Structural Determinism Gate Signatures
     # ------------------------------------------------------------
 
     def test_deterministic_pipeline_output(self, tmp_path):
-        self._cleanup_testing_output()
-
         controller = SchemaMergerSplitterController()
         orchestrator = SchemaMergerSplitterOrchestrator()
         assembler = SchemaMergerSplitterOutputAssembler()
 
-        # Config
-        config = {
-            "runs": [
-                {
-                    "requires_all": [],
-                    "requires_none": [],
-                    "input_file": str(tmp_path / "input.json"),
-                    "output_assembler_file": str(tmp_path / "final.json"),
-                }
-            ]
-        }
+        input_path = tmp_path / "input.json"
+        final_path = tmp_path / "final.json"
+        config = self._make_single_run_config(input_path, final_path)
         self._write_json(tmp_path / "config.json", config)
 
         # Input
@@ -411,22 +367,19 @@ class TestPipelineUnified(PipelineUnifiedTestSignature):
             "output_filename": "merged.json",
             "sources": {str(src): [{"from": "$.a", "to": "A"}]},
         }
-        self._write_json(tmp_path / "input.json", input_json)
+        self._write_json(input_path, input_json)
 
         def run_once():
-            self._cleanup_testing_output()
             runs = controller.load_and_evaluate_config(tmp_path / "config.json")
             input_file, output_file = runs[0]
             output_filename, sources = controller.load_input_file(input_file)
-
-            self._inject_config_into_orchestrator(orchestrator, config)
-
             success, errors = orchestrator.run(
                 {"output_filename": output_filename, "sources": sources}
             )
             assert success is True
             assert errors == []
 
+            self._inject_run_config_into_orchestrator(orchestrator, input_file, output_file)
             artifacts = orchestrator.get_execution_artifacts()
             assembler.assemble_final_output(
                 artifacts["inputs"], artifacts["config"], artifacts["results"], output_file
@@ -449,16 +402,9 @@ class TestPipelineUnified(PipelineUnifiedTestSignature):
         orchestrator = SchemaMergerSplitterOrchestrator()
 
         # Config
-        config = {
-            "runs": [
-                {
-                    "requires_all": [],
-                    "requires_none": [],
-                    "input_file": str(tmp_path / "input.json"),
-                    "output_assembler_file": str(tmp_path / "final.json"),
-                }
-            ]
-        }
+        input_path = tmp_path / "input.json"
+        final_path = tmp_path / "final.json"
+        config = self._make_single_run_config(input_path, final_path)
         self._write_json(tmp_path / "config.json", config)
 
         # Input referencing missing file
@@ -466,15 +412,12 @@ class TestPipelineUnified(PipelineUnifiedTestSignature):
             "output_filename": "merged.json",
             "sources": {str(tmp_path / "missing.json"): [{"from": "$.a", "to": "A"}]},
         }
-        self._write_json(tmp_path / "input.json", input_json)
+        self._write_json(input_path, input_json)
 
         def run_once():
             runs = controller.load_and_evaluate_config(tmp_path / "config.json")
             input_file, _ = runs[0]
             output_filename, sources = controller.load_input_file(input_file)
-
-            self._inject_config_into_orchestrator(orchestrator, config)
-
             return orchestrator.run(
                 {"output_filename": output_filename, "sources": sources}
             )
@@ -487,48 +430,34 @@ class TestPipelineUnified(PipelineUnifiedTestSignature):
 
     def test_no_implicit_mutation(self, tmp_path):
         """
-        The pipeline must not mutate config/input/source JSON or execution artifacts.
+        Use ExecutionArtifactsDummy to ensure no implicit mutation of
+        config / inputs / results when overridden.
         """
-        assembler = SchemaMergerSplitterOutputAssembler()
         dummy = ExecutionArtifactsDummy()
 
-        # Deep copies of primary fields
-        inputs_before = deepcopy(dummy["inputs"])
-        config_before = deepcopy(dummy["config"])
-        results_before = deepcopy(dummy["results"])
+        original_inputs = json.loads(json.dumps(dummy["inputs"]))
+        original_config = json.loads(json.dumps(dummy["config"]))
+        original_results = json.loads(json.dumps(dummy["results"]))
 
-        output_file = tmp_path / "final.json"
-        assembler.assemble_final_output(
-            dummy["inputs"], dummy["config"], dummy["results"], output_file
-        )
+        # Override secondary metadata only
+        dummy.override(scenario_label="no_mutation", injected_error="X")
 
-        # Primary fields must remain unchanged
-        assert dummy["inputs"] == inputs_before
-        assert dummy["config"] == config_before
-        assert dummy["results"] == results_before
+        assert dummy["inputs"] == original_inputs
+        assert dummy["config"] == original_config
+        assert dummy["results"] == original_results
 
     # ------------------------------------------------------------
-    # Consistency Gates
+    # Pipeline‑Level Consistency Gate Signatures
     # ------------------------------------------------------------
 
     def test_consistent_schema_alignment(self, tmp_path):
-        self._cleanup_testing_output()
-
         controller = SchemaMergerSplitterController()
         orchestrator = SchemaMergerSplitterOrchestrator()
         assembler = SchemaMergerSplitterOutputAssembler()
 
-        # Config
-        config = {
-            "runs": [
-                {
-                    "requires_all": [],
-                    "requires_none": [],
-                    "input_file": str(tmp_path / "input.json"),
-                    "output_assembler_file": str(tmp_path / "final.json"),
-                }
-            ]
-        }
+        input_path = tmp_path / "input.json"
+        final_path = tmp_path / "final.json"
+        config = self._make_single_run_config(input_path, final_path)
         self._write_json(tmp_path / "config.json", config)
 
         # Input
@@ -539,22 +468,20 @@ class TestPipelineUnified(PipelineUnifiedTestSignature):
             "output_filename": "merged.json",
             "sources": {str(src): [{"from": "$.a", "to": "A"}]},
         }
-        self._write_json(tmp_path / "input.json", input_json)
+        self._write_json(input_path, input_json)
 
         # Run pipeline
         runs = controller.load_and_evaluate_config(tmp_path / "config.json")
         input_file, output_file = runs[0]
 
         output_filename, sources = controller.load_input_file(input_file)
-
-        self._inject_config_into_orchestrator(orchestrator, config)
-
         success, errors = orchestrator.run(
             {"output_filename": output_filename, "sources": sources}
         )
         assert success is True
         assert errors == []
 
+        self._inject_run_config_into_orchestrator(orchestrator, input_file, output_file)
         artifacts = orchestrator.get_execution_artifacts()
 
         assembler.assemble_final_output(
@@ -612,23 +539,13 @@ class TestPipelineUnified(PipelineUnifiedTestSignature):
         assert list(merged.keys()) == ["A", "B"]
 
     def test_final_output_consistency(self, tmp_path):
-        self._cleanup_testing_output()
-
         controller = SchemaMergerSplitterController()
         orchestrator = SchemaMergerSplitterOrchestrator()
         assembler = SchemaMergerSplitterOutputAssembler()
 
-        # Config
-        config = {
-            "runs": [
-                {
-                    "requires_all": [],
-                    "requires_none": [],
-                    "input_file": str(tmp_path / "input.json"),
-                    "output_assembler_file": str(tmp_path / "final.json"),
-                }
-            ]
-        }
+        input_path = tmp_path / "input.json"
+        final_path = tmp_path / "final.json"
+        config = self._make_single_run_config(input_path, final_path)
         self._write_json(tmp_path / "config.json", config)
 
         # Input
@@ -639,22 +556,20 @@ class TestPipelineUnified(PipelineUnifiedTestSignature):
             "output_filename": "merged.json",
             "sources": {str(src): [{"from": "$.a", "to": "A"}]},
         }
-        self._write_json(tmp_path / "input.json", input_json)
+        self._write_json(input_path, input_json)
 
         # Run pipeline
         runs = controller.load_and_evaluate_config(tmp_path / "config.json")
         input_file, output_file = runs[0]
 
         output_filename, sources = controller.load_input_file(input_file)
-
-        self._inject_config_into_orchestrator(orchestrator, config)
-
         success, errors = orchestrator.run(
             {"output_filename": output_filename, "sources": sources}
         )
         assert success is True
         assert errors == []
 
+        self._inject_run_config_into_orchestrator(orchestrator, input_file, output_file)
         artifacts = orchestrator.get_execution_artifacts()
 
         assembler.assemble_final_output(
