@@ -105,5 +105,5 @@ def main():
         logger.info(f"Final assembled output written to: {output_assembler_file}")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     main()
