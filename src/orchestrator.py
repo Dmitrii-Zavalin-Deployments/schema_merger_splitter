@@ -6,7 +6,7 @@ from pathlib import Path
 from jsonschema import validate
 from jsonpath_ng import parse as jsonpath_parse
 
-from .interfaces.orchestrator_interface import SchemaMergerSplitterOrchestratorInterface
+from src.interfaces.orchestrator_interface import SchemaMergerSplitterOrchestratorInterface
 
 
 class SchemaMergerSplitterOrchestrator(SchemaMergerSplitterOrchestratorInterface):

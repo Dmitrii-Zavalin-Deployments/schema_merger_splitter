@@ -5,7 +5,7 @@ from pathlib import Path
 
 from jsonschema import validate
 
-from .interfaces.controller_interface import SchemaMergerSplitterControllerInterface
+from src.interfaces.controller_interface import SchemaMergerSplitterControllerInterface
 
 
 class SchemaMergerSplitterController(SchemaMergerSplitterControllerInterface):

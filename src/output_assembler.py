@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from jsonschema import validate
 
-from .interfaces.output_assembler_interface import (
+from src.interfaces.output_assembler_interface import (
     SchemaMergerSplitterOutputAssemblerInterface,
 )
 

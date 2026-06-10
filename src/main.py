@@ -1,3 +1,4 @@
+import sys, os; sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 # src/main.py
 
 """
@@ -28,9 +29,9 @@ import logging
 from pathlib import Path
 import json
 
-from controller import SchemaMergerSplitterController
-from orchestrator import SchemaMergerSplitterOrchestrator
-from output_assembler import SchemaMergerSplitterOutputAssembler
+from src.controller import SchemaMergerSplitterController
+from src.orchestrator import SchemaMergerSplitterOrchestrator
+from src.output_assembler import SchemaMergerSplitterOutputAssembler
 
 
 # ------------------------------------------------------------
