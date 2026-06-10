@@ -6,71 +6,58 @@ from src.interfaces.output_assembler_interface import SchemaMergerSplitterOutput
 # --- 1. Controller Interface Tests ---
 
 def test_controller_interface_enforcement():
-    # Test that valid subclass is allowed
-    class ValidController(SchemaMergerSplitterControllerInterface):
-        def load_and_evaluate_config(self, config_path): pass
-        def load_input_file(self, input_file_path): pass
+    # Class that inherits but does NOT implement methods (forces base call)
+    class PartialController(SchemaMergerSplitterControllerInterface):
+        pass
     
-    ValidController() # Should not raise
+    instance = PartialController()
+    
+    # Test NotImplementedError
+    with pytest.raises(NotImplementedError):
+        instance.load_and_evaluate_config("path")
+    with pytest.raises(NotImplementedError):
+        instance.load_input_file("path")
 
-    # Test that illegal member raises TypeError [cite: 3]
+    # Test illegal member enforcement (from __init_subclass__)
     with pytest.raises(TypeError, match="CONSTITUTION VIOLATION"):
         class InvalidController(SchemaMergerSplitterControllerInterface):
-            def unauthorized_method(self): pass
-    
-    # Test NotImplementedError [cite: 7, 8]
-    c = ValidController()
-    with pytest.raises(NotImplementedError):
-        c.load_and_evaluate_config("path")
-    with pytest.raises(NotImplementedError):
-        c.load_input_file("path")
+            def rogue_method(self): pass
 
 # --- 2. Orchestrator Interface Tests ---
 
 def test_orchestrator_interface_enforcement():
-    class ValidOrchestrator(SchemaMergerSplitterOrchestratorInterface):
-        def run(self, input_json_instance): pass
-        def validate_input_json(self, input_json_instance): pass
-        def load_source_files(self, input_json_instance): pass
-        def execute_copy_operations(self, loaded_sources, input_json_instance): pass
-        def write_merged_output(self, merged_output, input_json_instance): pass
-        def write_results_json(self, success, errors, input_json_instance): pass
-        def get_execution_artifacts(self): pass
+    class PartialOrchestrator(SchemaMergerSplitterOrchestratorInterface):
+        pass
 
-    # Test illegal member [cite: 19]
+    instance = PartialOrchestrator()
+    
+    # All these calls will hit the base class NotImplementedError
+    with pytest.raises(NotImplementedError): instance.run({})
+    with pytest.raises(NotImplementedError): instance.validate_input_json({})
+    with pytest.raises(NotImplementedError): instance.load_source_files({})
+    with pytest.raises(NotImplementedError): instance.execute_copy_operations({}, {})
+    with pytest.raises(NotImplementedError): instance.write_merged_output({}, {})
+    with pytest.raises(NotImplementedError): instance.write_results_json(True, [], {})
+    with pytest.raises(NotImplementedError): instance.get_execution_artifacts()
+
+    # Test illegal member
     with pytest.raises(TypeError, match="CONSTITUTION VIOLATION"):
         class InvalidOrchestrator(SchemaMergerSplitterOrchestratorInterface):
             def rogue_method(self): pass
 
-    # Test NotImplementedError [cite: 20-28]
-    o = ValidOrchestrator()
-    with pytest.raises(NotImplementedError):
-        o.run({})
-    with pytest.raises(NotImplementedError):
-        o.validate_input_json({})
-    with pytest.raises(NotImplementedError):
-        o.load_source_files({})
-    with pytest.raises(NotImplementedError):
-        o.execute_copy_operations({}, {})
-    with pytest.raises(NotImplementedError):
-        o.write_merged_output({}, {})
-    with pytest.raises(NotImplementedError):
-        o.write_results_json(True, [], {})
-    with pytest.raises(NotImplementedError):
-        o.get_execution_artifacts()
-
 # --- 3. Output Assembler Interface Tests ---
 
 def test_output_assembler_interface_enforcement():
-    class ValidAssembler(SchemaMergerSplitterOutputAssemblerInterface):
-        def assemble_final_output(self, inputs, config, results, output_assembler_file): pass
+    class PartialAssembler(SchemaMergerSplitterOutputAssemblerInterface):
+        pass
     
-    # Test illegal member [cite: 11]
+    instance = PartialAssembler()
+    
+    # Test NotImplementedError
+    with pytest.raises(NotImplementedError):
+        instance.assemble_final_output({}, {}, {}, "file")
+    
+    # Test illegal member
     with pytest.raises(TypeError, match="CONSTITUTION VIOLATION"):
         class InvalidAssembler(SchemaMergerSplitterOutputAssemblerInterface):
             def bad_method(self): pass
-            
-    # Test NotImplementedError [cite: 14]
-    a = ValidAssembler()
-    with pytest.raises(NotImplementedError):
-        a.assemble_final_output({}, {}, {}, "file")
