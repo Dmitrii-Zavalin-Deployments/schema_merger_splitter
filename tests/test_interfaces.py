@@ -32,13 +32,20 @@ def test_orchestrator_interface_enforcement():
     instance = PartialOrchestrator()
     
     # All these calls will hit the base class NotImplementedError
-    with pytest.raises(NotImplementedError): instance.run({})
-    with pytest.raises(NotImplementedError): instance.validate_input_json({})
-    with pytest.raises(NotImplementedError): instance.load_source_files({})
-    with pytest.raises(NotImplementedError): instance.execute_copy_operations({}, {})
-    with pytest.raises(NotImplementedError): instance.write_merged_output({}, {})
-    with pytest.raises(NotImplementedError): instance.write_results_json(True, [], {})
-    with pytest.raises(NotImplementedError): instance.get_execution_artifacts()
+    with pytest.raises(NotImplementedError):
+        instance.run({})
+    with pytest.raises(NotImplementedError):
+        instance.validate_input_json({})
+    with pytest.raises(NotImplementedError):
+        instance.load_source_files({})
+    with pytest.raises(NotImplementedError):
+        instance.execute_copy_operations({}, {})
+    with pytest.raises(NotImplementedError):
+        instance.write_merged_output({}, {})
+    with pytest.raises(NotImplementedError):
+        instance.write_results_json(True, [], {})
+    with pytest.raises(NotImplementedError):
+        instance.get_execution_artifacts()
 
     # Test illegal member
     with pytest.raises(TypeError, match="CONSTITUTION VIOLATION"):
