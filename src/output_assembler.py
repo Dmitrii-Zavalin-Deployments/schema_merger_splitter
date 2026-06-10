@@ -76,11 +76,12 @@ class SchemaMergerSplitterOutputAssembler(SchemaMergerSplitterOutputAssemblerInt
         validate(instance=assembled, schema=schema)
 
         # ------------------------------------------------------------
-        # 4. Normalize output path
+        # 4. Normalize output path (safe coercion to Path)
         # ------------------------------------------------------------
-        output_path = Path(output_assembler_file)
+        output_path = Path(str(output_assembler_file))
+
         if not output_path.is_absolute():
-            output_path = base_dir / output_assembler_file
+            output_path = Path(base_dir) / output_path
 
         output_path.parent.mkdir(parents=True, exist_ok=True)
 

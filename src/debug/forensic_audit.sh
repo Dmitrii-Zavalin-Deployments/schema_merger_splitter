@@ -1,143 +1,112 @@
 #!/usr/bin/env bash
 # src/debug/forensic_audit.sh
 #
-# Post‑test forensic audit for Schema‑Merger‑Splitter pipeline.
-# Designed to run in GitHub Actions after pytest, to surface root causes
-# and provide automated‑repair hints (sed lines are commented out).
+# Forensic audit for:
+#   AttributeError: 'str' object has no attribute 'open'
+#
+# This indicates that output_assembler_file was passed as a STRING,
+# and assembler attempted: Path(output_assembler_file).open(...)
+#
+# This script surfaces the root cause and proposes automated repairs.
 
 set -euo pipefail
 
 echo "=== FORENSIC AUDIT: START ==="
 
+###############################################################################
+# 1. Show failing test summary
+###############################################################################
 echo
-echo "=== 1. Show failing test summary (if available) ==="
+echo "=== 1. Last failed tests (if any) ==="
 if [ -f ".pytest_cache/v/cache/lastfailed" ]; then
   cat .pytest_cache/v/cache/lastfailed || true
 fi
 
+###############################################################################
+# 2. Search for all output_assembler_file usage
+###############################################################################
 echo
-echo "=== 2. Grep for orchestrator config guard and artifacts usage ==="
-grep -n "get_execution_artifacts" -R src tests || true
-grep -n "_config" -R src tests || true
-grep -n "assemble_final_output" -R src tests || true
+echo "=== 2. Grep for output_assembler_file usage ==="
+grep -RIn "output_assembler_file" src tests || true
 
+###############################################################################
+# 3. Inspect assembler path normalization
+###############################################################################
 echo
-echo "=== 3. Show smoking‑gun source around orchestrator artifacts ==="
-echo "--- FILE: src/orchestrator.py ---"
-if [ -f "src/orchestrator.py" ]; then
-  nl -ba src/orchestrator.py | sed -n '160,230p' || true
-fi
+echo "=== 3. Inspect assembler path normalization ==="
+nl -ba src/output_assembler.py | sed -n '60,120p' || true
 
+###############################################################################
+# 4. Inspect how tests pass output_assembler_file
+###############################################################################
 echo
-echo "--- FILE: src/output_assembler.py ---"
-if [ -f "src/output_assembler.py" ]; then
-  nl -ba src/output_assembler.py | sed -n '1,260p' || true
-fi
+echo "=== 4. How tests pass output_assembler_file ==="
+grep -RIn "assemble_final_output" tests/test_pipeline_unified.py || true
+nl -ba tests/test_pipeline_unified.py | sed -n '1,200p' || true
+nl -ba tests/test_pipeline_unified.py | sed -n '200,400p' || true
+nl -ba tests/test_pipeline_unified.py | sed -n '400,650p' || true
 
+###############################################################################
+# 5. Inspect controller return values
+###############################################################################
 echo
-echo "--- FILE: tests/test_pipeline_unified.py ---"
-if [ -f "tests/test_pipeline_unified.py" ]; then
-  nl -ba tests/test_pipeline_unified.py | sed -n '1,260p' || true
-  nl -ba tests/test_pipeline_unified.py | sed -n '260,520p' || true
-fi
+echo "=== 5. controller.load_and_evaluate_config return values ==="
+nl -ba src/controller.py | sed -n '1,200p' || true
 
+###############################################################################
+# 6. Inspect orchestrator.get_execution_artifacts
+###############################################################################
 echo
-echo "=== 4. Show schema definitions for config/output/results ==="
-if [ -d "schema" ]; then
-  echo "--- schema_merger_splitter_config.schema.json ---"
-  nl -ba schema/schema_merger_splitter_config.schema.json | sed -n '1,260p' || true
+echo "=== 6. orchestrator.get_execution_artifacts ==="
+nl -ba src/orchestrator.py | sed -n '170,240p' || true
 
-  echo
-  echo "--- schema_merger_splitter_output_schema.json ---"
-  nl -ba schema/schema_merger_splitter_output_schema.json | sed -n '1,260p' || true
-
-  echo
-  echo "--- schema_merger_splitter_results_schema.json ---"
-  nl -ba schema/schema_merger_splitter_results_schema.json | sed -n '1,260p' || true
-fi
-
+###############################################################################
+# 7. DIAGNOSTIC SUMMARY
+###############################################################################
 echo
-echo "=== 5. Inspect latest pipeline outputs (if any) ==="
-if [ -d "data/testing-input-output" ]; then
-  echo "--- ls -l data/testing-input-output ---"
-  ls -l data/testing-input-output || true
-
-  echo
-  echo "--- cat merged.json (if exists) ---"
-  if [ -f "data/testing-input-output/merged.json" ]; then
-    cat data/testing-input-output/merged.json || true
-  fi
-
-  echo
-  echo "--- cat merged.json.results.json (if exists) ---"
-  if [ -f "data/testing-input-output/merged.json.results.json" ]; then
-    cat data/testing-input-output/merged.json.results.json || true
-  fi
-fi
-
+echo "=== 7. DIAGNOSTIC SUMMARY ==="
+echo "The AttributeError indicates:"
+echo "  output_assembler_file is a STRING, not a Path object."
 echo
-echo "=== 6. Inspect ExecutionArtifactsDummy for config shape ==="
-if [ -f "tests/dummies/execution_artifacts_dummy.py" ]; then
-  nl -ba tests/dummies/execution_artifacts_dummy.py | sed -n '1,260p' || true
-fi
-
+echo "Assembler does:"
+echo "  output_path = Path(output_assembler_file)"
+echo "  if not output_path.is_absolute():"
+echo "      output_path = base_dir / output_assembler_file"
 echo
-echo "=== 7. Focused audit: helper injecting orchestrator._config in pipeline tests ==="
-if [ -f "tests/test_pipeline_unified.py" ]; then
-  grep -n "_inject_run_config_into_orchestrator" -n tests/test_pipeline_unified.py || true
-  nl -ba tests/test_pipeline_unified.py | sed -n '40,120p' || true
-fi
+echo "If output_assembler_file is a string, then:"
+echo "  base_dir / output_assembler_file"
+echo "returns a STRING (because / operator is overloaded only for Path)."
+echo
+echo "Thus output_path becomes a STRING → .open() fails."
+
+###############################################################################
+# 8. SUGGESTED AUTOMATED REPAIRS (COMMENTED sed COMMANDS)
+###############################################################################
+echo
+echo "=== 8. Suggested automated repairs (commented sed commands) ==="
+
+echo "# Option A — Fix controller to return Path objects instead of strings"
+echo "# sed -i \"s/activated_runs.append((input_file, output_assembler_file))/activated_runs.append((Path(input_file), Path(output_assembler_file)))/\" src/controller.py"
 
 echo
-echo "=== 8. DIAGNOSTIC NOTE ==="
-echo "The failing ValidationError shows instance['config'] is a single run entry:"
-echo "  {\"requires_all\": [], \"requires_none\": [], \"input_file\": ..., \"output_assembler_file\": ...}"
-echo "but the config schema expects:"
-echo "  {\"runs\": [ {\"requires_all\": [], \"requires_none\": [], \"input_file\": ..., \"output_assembler_file\": ...} ]}"
-echo
-echo "This strongly suggests that the helper which injects orchestrator._config for"
-echo "execution artifacts should wrap the run entry inside a top‑level 'runs' array,"
-echo "so that artifacts['config'] matches schema_merger_splitter_config.schema.json."
+echo "# Option B — Fix tests to wrap output_file in Path() before assembler call"
+echo "# sed -i \"s/assemble_final_output(artifacts\
+
+\[\\\"inputs\\\"\\]
+
+, artifacts\
+
+\[\\\"config\\\"\\]
+
+, artifacts\
+
+\[\\\"results\\\"\\]
+
+, output_file)/assemble_final_output(artifacts[\\\"inputs\\\"], artifacts[\\\"config\\\"], artifacts[\\\"results\\\"], Path(output_file))/\" tests/test_pipeline_unified.py"
 
 echo
-echo "=== 9. SUGGESTED AUTOMATED REPAIRS (COMMENTED sed COMMANDS) ==="
-echo "# The goal: make orchestrator._config a schema‑valid config object:"
-echo "#   {\"runs\": [<single_run_entry>]}"
-echo "# instead of a bare single_run_entry dict."
-
-echo
-echo "# 9.1 Patch tests/test_pipeline_unified.py helper _inject_run_config_into_orchestrator"
-echo "# Current shape (for reference):"
-echo "#   def _inject_run_config_into_orchestrator(self, orchestrator, input_file, output_file):"
-echo "#       orchestrator._config = {"
-echo "#           \"requires_all\": [],"
-echo "#           \"requires_none\": [],"
-echo "#           \"input_file\": str(input_file),"
-echo "#           \"output_assembler_file\": str(output_file),"
-echo "#       }"
-echo "#"
-echo "# Desired shape:"
-echo "#   def _inject_run_config_into_orchestrator(self, orchestrator, input_file, output_file):"
-echo "#       orchestrator._config = {"
-echo "#           \"runs\": ["
-echo "#               {"
-echo "#                   \"requires_all\": [],"
-echo "#                   \"requires_none\": [],"
-echo "#                   \"input_file\": str(input_file),"
-echo "#                   \"output_assembler_file\": str(output_file),"
-echo "#               }"
-echo "#           ]"
-echo "#       }"
-echo "#"
-echo "# Example sed patch (may need tweaking for exact spacing/indentation):"
-echo "# sed -i \"s/orchestrator._config = {\\$/orchestrator._config = {\\\\n            \\\"runs\\\": [\\\\n                {\\\\n                    \\\"requires_all\\\": [],\\\\n                    \\\"requires_none\\\": [],\\\\n                    \\\"input_file\\\": str(input_file),\\\\n                    \\\"output_assembler_file\\\": str(output_file),\\\\n                }\\\\n            ]\\\\n        }/\" tests/test_pipeline_unified.py"
-
-echo
-echo "# 9.2 (Optional) Assert that artifacts['config'] is always schema‑shaped"
-echo "# You can add a quick debug assertion in tests/test_pipeline_unified.py"
-echo "# near final_output_consistency to confirm:"
-echo "#   assert set(artifacts['config'].keys()) == {'runs'}"
-echo "#   assert isinstance(artifacts['config']['runs'], list)"
+echo "# Option C — Fix assembler to coerce strings safely"
+echo "# sed -i \"s/output_path = Path(output_assembler_file)/output_path = Path(str(output_assembler_file))/\" src/output_assembler.py"
 
 echo
 echo "=== FORENSIC AUDIT: END ==="
