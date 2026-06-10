@@ -1,5 +1,4 @@
 # tests/test_main.py
-import json
 import logging
 from unittest.mock import patch, mock_open
 from src.main import main
