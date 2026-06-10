@@ -2,69 +2,56 @@
 set -euo pipefail
 
 echo "========================================================================"
-echo "🕵️ STARTING FORENSIC AUDIT: TEST PIPELINE UNIFIED FAILURES"
+echo "🕵️ STARTING REVISED FORENSIC AUDIT: 3 REMAINING PIPELINE FAILURES"
 echo "========================================================================"
 
 #-------------------------------------------------------------------------------
 # FAILURE 1: test_pipeline_failure_case
-# Symptom: AssertionError: assert not True (merged.json exists when it shouldn't)
-# Root Cause: Missing cleanup/teardown or an inverted assertion check.
+# Symptom: AssertionError: assert not True (where True = exists())
+# Root Cause: A hardcoded 'data/testing-input-output/merged.json' artifact from 
+#             a previous success test is leaking into this test environment, or 
+#             the pipeline isn't isolating its run paths properly.
 #-------------------------------------------------------------------------------
 echo -e "\n🔍 [AUDIT] Failure 1: test_pipeline_failure_case"
 TARGET_FILE="data/testing-input-output/merged.json"
 
+echo "📝 Checking if leaking artifact exists right now:"
 if [ -f "$TARGET_FILE" ]; then
-    echo "⚠️ Found stale/unexpected artifact at: $TARGET_FILE"
-    echo "--- File Metadata ---"
-    ls -la "$TARGET_FILE"
-    echo "--- File Contents (Truncated) ---"
-    head -n 20 "$TARGET_FILE"
+    echo "⚠️ Leaked artifact detected: $TARGET_FILE"
+    rm -v "$TARGET_FILE"
 else
-    echo "✅ Target file $TARGET_FILE does not exist in current workspace state."
+    echo "✅ No stale artifact found in current workspace context."
 fi
 
-echo -e "\n📝 Inspection: test_pipeline_failure_case source"
-grep -n -C 10 "def test_pipeline_failure_case" tests/test_pipeline_unified.py || true
+echo -e "\n📝 Smoking-gun source audit for test_pipeline_failure_case (Lines 173-224):"
+cat -n tests/test_pipeline_unified.py | sed -n '173,224p'
 
 # Automated Repair Injection Template:
-# Ensure the file is unlinked during setup/teardown or fix the boolean assertion
-# sed -i '/def test_pipeline_failure_case/a \        import os; os.unlink("data/testing-input-output/merged.json") if os.path.exists("data/testing-input-output/merged.json") else None' tests/test_pipeline_unified.py
+# Clean up the global path or force isolation inside the test block before orchestration execution
+# sed -i '/def test_pipeline_failure_case(self, tmp_path):/a \        import os; os.remove("data/testing-input-output/merged.json") if os.path.exists("data/testing-input-output/merged.json") else None' tests/test_pipeline_unified.py
 
 
 #-------------------------------------------------------------------------------
 # FAILURES 2 & 3: test_sensitivity_missing_files & test_sensitivity_malformed_json
-# Symptom: DID NOT RAISE <class 'Exception'>
-# Root Cause: The pipeline logic is swallowing exceptions internally or returning 
-#             graceful fallbacks instead of propagating errors under test conditions.
+# Symptom: Failed: DID NOT RAISE <class 'Exception'>
+# Root Cause: src/controller.py load_and_evaluate_config handles errors gracefully 
+#             (returning an empty array or logging), but the test requires an exception.
 #-------------------------------------------------------------------------------
-echo -e "\n🔍 [AUDIT] Failures 2 & 3: Sensitivity Exception Suppression"
-echo "📝 Smoking-gun source audit for missing/malformed file handling:"
-cat -n tests/test_pipeline_unified.py | sed -n '/test_sensitivity_missing_files/,/test_deterministic_pipeline_output/p'
+echo -e "\n🔍 [AUDIT] Failures 2 & 3: Exception Suppression in Controller"
+echo "📝 Smoking-gun source audit for load_and_evaluate_config in src/controller.py:"
+cat -n src/controller.py | grep -n -A 40 "def load_and_evaluate_config" || true
 
-echo -e "\n🕵️ Grepping pipeline implementation for exception handling ('try/except'):"
-grep -n -C 3 -E "try:|except" src/pipeline/*.py tests/test_pipeline_unified.py || true
+echo -e "\n🕵️ Checking for silent try-except blocks inside src/controller.py:"
+grep -n -C 4 -E "try:|except" src/controller.py || true
 
-# Automated Repair Injection Template:
-# Force the test to look for a more specific exception or prevent internal catch-all blocks
-# sed -i 's/pytest.raises(Exception)/pytest.raises(ValueError)/g' tests/test_pipeline_unified.py
+# Automated Repair Injection Templates:
+# Option A: If the controller MUST raise exceptions on failures to pass tests:
+# sed -i '/except FileNotFoundError:/a \        raise' src/controller.py
+# sed -i '/except json.JSONDecodeError:/a \        raise' src/controller.py
 
-
-#-------------------------------------------------------------------------------
-# FAILURE 4: test_deterministic_pipeline_output
-# Symptom: AttributeError: 'str' object has no attribute 'open'
-# Root Cause: A raw string path was passed to a method expecting a pathlib.Path 
-#             object (or vice-versa), resulting in a crashed `.open()` call.
-#-------------------------------------------------------------------------------
-echo -e "\n🔍 [AUDIT] Failure 4: test_deterministic_pipeline_output"
-echo "📝 Smoking-gun source audit for deterministic pipeline test block:"
-cat -n tests/test_pipeline_unified.py | sed -n '/test_deterministic_pipeline_output/,/^$/p'
-
-echo -e "\n🕵️ Tracking '.open(' down in pipeline source files to catch string/Path type mismatches:"
-grep -n -H "\.open(" src/**/*.py src/*.py tests/test_pipeline_unified.py || true
-
-# Automated Repair Injection Template:
-# Explicitly cast the incoming string path to a Path object where `.open()` is called.
-# sed -i 's/open(/Path(\0)/g' src/pipeline/core.py # Replace with specific target signature
+# Option B: If the controller design is intentionally graceful, fix the tests to assert empty/failed runs:
+# sed -i '/with pytest.raises(Exception):/,/controller.load_and_evaluate_config(missing)/c\        assert controller.load_and_evaluate_config(missing) == []' tests/test_pipeline_unified.py
+# sed -i '/with pytest.raises(Exception):/,/controller.load_and_evaluate_config(bad_config)/c\        assert controller.load_and_evaluate_config(bad_config) == []' tests/test_pipeline_unified.py
 
 
 echo -e "\n========================================================================"
