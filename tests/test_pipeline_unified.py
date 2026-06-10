@@ -398,8 +398,8 @@ class TestPipelineUnified(PipelineUnifiedTestSignature):
 
             # FIX — wrap output_file in Path()
             return (
-                self._load_json("data/testing-input-output/merged.json"),
-                self._load_json("data/testing-input-output/merged.json.results.json"),
+                self._load_json(Path("data/testing-input-output/merged.json")),
+                self._load_json(Path("data/testing-input-output/merged.json.results.json")),
                 self._load_json(Path(output_file)),
             )
 
