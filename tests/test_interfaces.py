@@ -44,13 +44,20 @@ def test_orchestrator_interface_enforcement():
 
     # Test NotImplementedError [cite: 20-28]
     o = ValidOrchestrator()
-    with pytest.raises(NotImplementedError): o.run({})
-    with pytest.raises(NotImplementedError): o.validate_input_json({})
-    with pytest.raises(NotImplementedError): o.load_source_files({})
-    with pytest.raises(NotImplementedError): o.execute_copy_operations({}, {})
-    with pytest.raises(NotImplementedError): o.write_merged_output({}, {})
-    with pytest.raises(NotImplementedError): o.write_results_json(True, [], {})
-    with pytest.raises(NotImplementedError): o.get_execution_artifacts()
+    with pytest.raises(NotImplementedError):
+        o.run({})
+    with pytest.raises(NotImplementedError):
+        o.validate_input_json({})
+    with pytest.raises(NotImplementedError):
+        o.load_source_files({})
+    with pytest.raises(NotImplementedError):
+        o.execute_copy_operations({}, {})
+    with pytest.raises(NotImplementedError):
+        o.write_merged_output({}, {})
+    with pytest.raises(NotImplementedError):
+        o.write_results_json(True, [], {})
+    with pytest.raises(NotImplementedError):
+        o.get_execution_artifacts()
 
 # --- 3. Output Assembler Interface Tests ---
 
