@@ -231,7 +231,7 @@ jobs:
           EOF
           )
 
-          HEADER="# 🌊 Bernoulli Solver Performance Audit"
+          HEADER="# 🧩 Schema‑Merger‑Splitter Performance Audit"
           if [ -f "performance_audit.md" ]; then
               tail -n +2 performance_audit.md > old_body.tmp
               echo "$HEADER" > performance_audit.md
