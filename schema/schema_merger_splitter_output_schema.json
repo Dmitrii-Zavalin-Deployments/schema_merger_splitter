@@ -1,0 +1,123 @@
+{
+  "$id": "schema_merger_splitter_output_schema.json",
+  "title": "Schema‑Merger‑Splitter Output Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "output_filename": {
+          "type": "string",
+          "description": "File name (not path) where the merged JSON must be written inside the simulators/ directory."
+        },
+        "sources": {
+          "type": "object",
+          "description": "Mapping of source filenames to their extraction rules. Each key must be a file name inside the simulators/ directory.",
+          "additionalProperties": {
+            "type": "array",
+            "description": "List of field extraction rules for this source file.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "from": {
+                  "type": "string",
+                  "description": "JSONPath expression pointing to the field inside the source JSON."
+                },
+                "to": {
+                  "type": "string",
+                  "description": "Top-level key name in the merged JSON where the extracted value will be placed."
+                }
+              },
+              "required": [
+                "from",
+                "to"
+              ]
+            }
+          }
+        }
+      },
+      "required": [
+        "output_filename",
+        "sources"
+      ]
+    },
+    "config": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "runs": {
+          "type": "array",
+          "description": "Deterministic list of conditional execution rules evaluated in order.",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "requires_all": {
+                "type": "array",
+                "description": "All listed files must exist for this run to execute.",
+                "items": {
+                  "type": "string",
+                  "description": "Path to a file that must exist."
+                }
+              },
+              "requires_none": {
+                "type": "array",
+                "description": "None of the listed files may exist for this run to execute.",
+                "items": {
+                  "type": "string",
+                  "description": "Path to a file that must NOT exist."
+                }
+              },
+              "input_file": {
+                "type": "string",
+                "description": "Path to the merger‑splitter input JSON file to execute when conditions are satisfied."
+              },
+              "output_assembler_file": {
+                "type": "string",
+                "description": "Path where the final assembled output object for this run must be written."
+              }
+            },
+            "required": [
+              "requires_all",
+              "requires_none",
+              "input_file",
+              "output_assembler_file"
+            ]
+          }
+        }
+      },
+      "required": [
+        "runs"
+      ]
+    },
+    "results": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "success": {
+          "type": "boolean",
+          "description": "Indicates whether the module completed without errors."
+        },
+        "errors": {
+          "type": "array",
+          "description": "List of errors encountered during execution. Empty if execution succeeded.",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "success",
+        "errors"
+      ]
+    }
+  },
+  "required": [
+    "inputs",
+    "config",
+    "results"
+  ]
+}
