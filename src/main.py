@@ -1,4 +1,7 @@
+<<<<<<< Updated upstream
 # src/main.py
+=======
+>>>>>>> Stashed changes
 """
 Schema‑Merger‑Splitter — Top‑Level Pipeline Runner (Two‑Stage Controller)
 
@@ -22,15 +25,13 @@ main.py performs the two‑stage execution model:
 This file is NOT part of the Minimal Step Path and is therefore allowed to
 instantiate and connect the components.
 """
-
+import json
 import logging
 from pathlib import Path
-import json
 
 from src.controller import SchemaMergerSplitterController
 from src.orchestrator import SchemaMergerSplitterOrchestrator
 from src.output_assembler import SchemaMergerSplitterOutputAssembler
-
 
 # ------------------------------------------------------------
 # Configure logger
