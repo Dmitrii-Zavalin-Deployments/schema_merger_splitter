@@ -1,5 +1,8 @@
+<<<<<<< Updated upstream
 # src/main.py
 
+=======
+>>>>>>> Stashed changes
 """
 Schema‑Merger‑Splitter — Top‑Level Pipeline Runner (Two‑Stage Controller)
 
