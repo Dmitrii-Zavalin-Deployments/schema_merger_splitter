@@ -27,8 +27,14 @@ jobs:
       # 🔧 GLOBAL ROBOT IDENTITY + NOTES INITIALIZATION
       - name: 🤖 Initialize Robot Identity & Notes
         run: |
-          git config --global user.name "Automation Engine"
-          git config --global user.email "automation@yourdomain"
+          # Normalize branch name for safe use in email (replace "/" with "-")
+          BRANCH_SAFE="${GITHUB_REF_NAME//\//-}"
+
+          # Set dynamic robot identity per branch
+          git config --global user.name "Automation Engine (${BRANCH_SAFE})"
+          git config --global user.email "automation+${BRANCH_SAFE}@yourdomain"
+
+          # Ensure Git Notes are rewritten and preserved
           git config --global notes.rewriteRef "refs/notes/*"
 
       - name: 🐍 Setup Python 3.11
@@ -163,8 +169,14 @@ jobs:
       # 🔧 GLOBAL ROBOT IDENTITY + NOTES INITIALIZATION
       - name: 🤖 Initialize Robot Identity & Notes
         run: |
-          git config --global user.name "Automation Engine"
-          git config --global user.email "automation@yourdomain"
+          # Normalize branch name for safe use in email (replace "/" with "-")
+          BRANCH_SAFE="${GITHUB_REF_NAME//\//-}"
+
+          # Set dynamic robot identity per branch
+          git config --global user.name "Automation Engine (${BRANCH_SAFE})"
+          git config --global user.email "automation+${BRANCH_SAFE}@yourdomain"
+
+          # Ensure Git Notes are rewritten and preserved
           git config --global notes.rewriteRef "refs/notes/*"
 
       - name: 🐍 Setup Python 3.11
