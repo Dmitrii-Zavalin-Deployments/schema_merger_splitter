@@ -2,7 +2,7 @@
   "$id": "schema_merger_splitter_config_schema.json",
   "title": "Schema‑Merger‑Splitter Config Schema",
   "type": "object",
-  "additionalProperties": false,
+  "additionalProperties": true,
 
   "properties": {
     "runs": {
