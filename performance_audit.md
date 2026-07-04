@@ -1,5 +1,12 @@
 # 🧩 Schema‑Merger‑Splitter Performance Audit
 
+### Audit: 2026-07-04 15:42:30 UTC
+- **Branch:** `main`
+- **Status:** failure
+- **CPU Load:** 29.5%
+- **Memory Usage:** 1194/15993MB
+---
+
 ### Audit: 2026-06-12 10:42:42 UTC
 - **Branch:** `main`
 - **Status:** success
