@@ -24,13 +24,12 @@ class SchemaMergerSplitterOutputAssembler(SchemaMergerSplitterOutputAssemblerInt
     # ------------------------------------------------------------
     # Step 7 — Assemble final output object
     # ------------------------------------------------------------
-    def assemble_final_output(self, inputs, config, results, output_assembler_file):
+    def assemble_final_output(self, inputs, results, output_assembler_file):
         """
         Assemble the final output object:
 
             {
                 "inputs":  <validated input JSON instance>,
-                "config":  <validated config entry>,
                 "results": <results JSON instance>
             }
 
@@ -43,15 +42,11 @@ class SchemaMergerSplitterOutputAssembler(SchemaMergerSplitterOutputAssemblerInt
         # ------------------------------------------------------------
         if inputs is None:
             raise ValueError("Final output assembly error: 'inputs' must not be None.")
-        if config is None:
-            raise ValueError("Final output assembly error: 'config' must not be None.")
         if results is None:
             raise ValueError("Final output assembly error: 'results' must not be None.")
 
         if not isinstance(inputs, dict):
             raise ValueError("Final output assembly error: 'inputs' must be a dict.")
-        if not isinstance(config, dict):
-            raise ValueError("Final output assembly error: 'config' must be a dict.")
         if not isinstance(results, dict):
             raise ValueError("Final output assembly error: 'results' must be a dict.")
 
@@ -60,7 +55,6 @@ class SchemaMergerSplitterOutputAssembler(SchemaMergerSplitterOutputAssemblerInt
         # ------------------------------------------------------------
         assembled = {
             "inputs": inputs,
-            "config": config,
             "results": results,
         }
 
@@ -76,7 +70,7 @@ class SchemaMergerSplitterOutputAssembler(SchemaMergerSplitterOutputAssemblerInt
         validate(instance=assembled, schema=schema)
 
         # ------------------------------------------------------------
-        # 4. Normalize output path (NEW: default to data/testing-input-output/)
+        # 4. Normalize output path (Default to data/testing-input-output/)
         # ------------------------------------------------------------
         output_path = Path(str(output_assembler_file))
 

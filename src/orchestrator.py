@@ -22,8 +22,8 @@ class SchemaMergerSplitterOrchestrator(SchemaMergerSplitterOrchestratorInterface
         Step 7  — Expose execution artifacts
         run()   — Execute Steps 2–6 in strict order
 
-    No defaults are introduced. The controller may inject a validated config
-    when running the full pipeline. Unit tests may omit config entirely.
+    No configuration defaults are introduced. Execution is purely driven by
+    the provided target input schema instance.
     """
 
     # ------------------------------------------------------------
@@ -58,7 +58,7 @@ class SchemaMergerSplitterOrchestrator(SchemaMergerSplitterOrchestratorInterface
         """
         base_dir = Path(__file__).resolve().parents[1]
 
-        # NEW: Default directory for all source files
+        # Default directory for all source files
         default_source_dir = base_dir / "data" / "testing-input-output"
 
         loaded_sources = {}
@@ -67,7 +67,7 @@ class SchemaMergerSplitterOrchestrator(SchemaMergerSplitterOrchestratorInterface
         for filename in input_json_instance["sources"].keys():
             path = Path(filename)
 
-            # NEW: Resolve relative paths inside data/testing-input-output/
+            # Resolve relative paths inside data/testing-input-output/
             if not path.is_absolute():
                 path = default_source_dir / filename
 
@@ -184,11 +184,6 @@ class SchemaMergerSplitterOrchestrator(SchemaMergerSplitterOrchestratorInterface
         self._results = results_obj
         self._inputs = input_json_instance
 
-        # NOTE:
-        # The controller injects _config in the full pipeline.
-        # Unit tests do not inject config, and that is allowed.
-        # No defaults are introduced; we simply do not enforce config here.
-
     # ------------------------------------------------------------
     # Step 7 — Expose execution artifacts
     # ------------------------------------------------------------
@@ -197,15 +192,11 @@ class SchemaMergerSplitterOrchestrator(SchemaMergerSplitterOrchestratorInterface
         Return:
             {
                 "inputs":  <validated input JSON>,
-                "config":  <validated config entry or None>,
                 "results": <results JSON>
             }
         """
-        config_value = self._config if hasattr(self, "_config") else None
-
         return {
             "inputs": self._inputs,
-            "config": config_value,
             "results": self._results,
         }
 

@@ -1,7 +1,7 @@
 class SchemaMergerSplitterOrchestratorInterface:
     """
     Contract‑only interface for executing the Schema‑Merger‑Splitter Minimal Step Path
-    for a single activated run.
+    for a single execution run.
 
     No logic, no defaults, and no computations may appear in this interface.
     Subclasses must not define any additional methods or attributes.
@@ -31,7 +31,7 @@ class SchemaMergerSplitterOrchestratorInterface:
                 )
 
     # ------------------------------------------------------------
-    # Step 2 (partially): Validate input JSON
+    # Step 2: Validate input JSON
     # ------------------------------------------------------------
     def validate_input_json(self, input_json_instance):
         """
@@ -103,8 +103,7 @@ class SchemaMergerSplitterOrchestratorInterface:
     # ------------------------------------------------------------
     def get_execution_artifacts(self):
         """
-        Return the validated input JSON, the validated config JSON,
-        and the results object.
+        Return the validated input JSON and the results object.
 
         Required for Phase 5 Output Assembly.
         """

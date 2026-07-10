@@ -32,13 +32,12 @@ class SchemaMergerSplitterOutputAssemblerInterface:
     # ------------------------------------------------------------
     # Step 7 — Assemble final output object
     # ------------------------------------------------------------
-    def assemble_final_output(self, inputs, config, results, output_assembler_file):
+    def assemble_final_output(self, inputs, results, output_assembler_file):
         """
         Assemble the final output object:
 
             {
                 "inputs":  <validated input JSON instance>,
-                "config":  <validated config entry>,
                 "results": <results JSON instance>
             }
 
@@ -47,7 +46,6 @@ class SchemaMergerSplitterOutputAssemblerInterface:
 
         Parameters:
             inputs: dict
-            config: dict
             results: dict
             output_assembler_file: str
 
