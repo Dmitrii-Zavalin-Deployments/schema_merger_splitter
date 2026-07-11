@@ -1,6 +1,4 @@
-import json
 from pathlib import Path
-from jsonschema import validate
 from interfaces.step_interface import PipelineInterface
 
 class MergerSplitterState(PipelineInterface):
