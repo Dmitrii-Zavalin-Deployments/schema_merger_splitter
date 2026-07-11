@@ -3,5 +3,9 @@
   "p_max": 150000.0,
   "v_min": 3.0,
   "v_max": 3.0,
-  "h": -50.0
+  "h": -50.0,
+  "properties": {
+    "rho": 1000,
+    "temperature": 25
+  }
 }
