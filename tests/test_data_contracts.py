@@ -26,7 +26,7 @@ def test_results_contract_parity():
     required_results = {"p_min", "p_max", "v_min", "v_max", "h"}
     
     # Using the result of our pipeline logic
-    output_path = Path("data/testing-input-output/building_navier_stokes_output.json")
+    output_path = Path("data/testing-input-output/validation_output.json")
     
     # Structural assertion: If the output doesn't exist or is malformed, fail immediately.
     assert output_path.exists(), "Results Contract Violation: Output missing."
