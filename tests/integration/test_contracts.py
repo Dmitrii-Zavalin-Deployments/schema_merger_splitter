@@ -39,9 +39,11 @@ def test_results_contract_parity():
         }
     }
     project_base = Path("data/testing-input-output/")
-        
-    # Execute pipeline
-    run_pure_pipeline(pipeline_config, project_base)
+    # Define temporary receipt path to satisfy signature
+    receipt_path = project_base / "test_execution_receipt.json"
+    
+    # Execute pipeline with all 3 required arguments
+    run_pure_pipeline(pipeline_config, project_base, receipt_path)
     
     # We verify the output structure contains the projected computational results.
     required_results = {"p_min", "p_max", "v_min", "v_max", "h"}
@@ -55,3 +57,7 @@ def test_results_contract_parity():
     
     for field in required_results:
         assert field in data, f"Results Contract Violation: Field '{field}' missing."
+
+    # Cleanup test artifact
+    if receipt_path.exists():
+        receipt_path.unlink()
