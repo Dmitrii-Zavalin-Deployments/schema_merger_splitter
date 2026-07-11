@@ -23,7 +23,26 @@ def test_input_contract_parity():
     assert len(missing) == 0, f"Input Contract Violation: Missing fields {missing}"
 
 def test_results_contract_parity():
-    run_pure_pipeline({"output_filename": "validation_output.json", "sources": {"validation_input_1.json": [{"from": "$.p_min", "to": "p_min"}, {"from": "$.p_max", "to": "p_max"}], "validation_input_2.json": [{"from": "$.v_min", "to": "v_min"}, {"from": "$.v_max", "to": "v_max"}, {"from": "$.h", "to": "h"}]}}, Path("data/testing-input-output/"))
+    # Define pipeline inputs and base path for readability
+        pipeline_config = {
+            "output_filename": "validation_output.json",
+            "sources": {
+                "validation_input_1.json": [
+                    {"from": "$.p2", "to": "p_min"},
+                    {"from": "$.p1", "to": "p_max"}
+                ],
+                "validation_input_2.json": [
+                    {"from": "$.velocity.v1", "to": "v_min"},
+                    {"from": "$.velocity.v2", "to": "v_max"},
+                    {"from": "$.height.h1", "to": "h"}
+                ]
+            }
+        }
+        project_base = Path("data/testing-input-output/")
+        
+    # Execute pipeline
+    run_pure_pipeline(pipeline_config, project_base)
+    
     # We verify the output structure contains the projected computational results.
     required_results = {"p_min", "p_max", "v_min", "v_max", "h"}
     
