@@ -23,7 +23,7 @@ def test_input_contract_parity():
     assert len(missing) == 0, f"Input Contract Violation: Missing fields {missing}"
 
 def test_results_contract_parity():
-    run_pure_pipeline({"sources": {"validation_input_1.json": [], "validation_input_2.json": []}}, Path("data/testing-input-output/"))
+    run_pure_pipeline({"output_filename": "validation_output.json", "sources": {"validation_input_1.json": [], "validation_input_2.json": []}}, Path("data/testing-input-output/"))
     # We verify the output structure contains the projected computational results.
     required_results = {"p_min", "p_max", "v_min", "v_max", "h"}
     
