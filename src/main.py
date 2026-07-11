@@ -5,7 +5,7 @@ from pathlib import Path
 from jsonschema import validate
 from src.state.merger_splitter_state import MergerSplitterState
 from src.pipeline.steps import ExecuteMappingStep, WriteOutputStep
-from interfaces.step_interface import PipelineInterface
+from interfaces.pipeline_interfaces import PipelineInterface
 
 # Configure Logging
 logging.basicConfig(
