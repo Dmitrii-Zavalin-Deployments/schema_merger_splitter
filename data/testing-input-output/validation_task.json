@@ -3,19 +3,19 @@
   "sources": {
     "validation_input_1.json": [
       {
-        "from": "$.p_min",
+        "from": "$.p1",
         "to": "p_min"
       },
       {
-        "from": "$.p_max",
+        "from": "$.p2",
         "to": "p_max"
       },
       {
-        "from": "$.v_min",
+        "from": "$.v1",
         "to": "v_min"
       },
       {
-        "from": "$.v_max",
+        "from": "$.v2",
         "to": "v_max"
       }
     ],
