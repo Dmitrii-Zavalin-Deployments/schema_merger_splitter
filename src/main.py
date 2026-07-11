@@ -15,15 +15,14 @@ logging.basicConfig(
 )
 logger = logging.getLogger("main")
 
-def run_pure_pipeline(input_data: dict, project_base: Path) -> PipelineInterface:
+def run_pure_pipeline(input_data: dict, simulators_dir: Path) -> PipelineInterface:
     """
     Direct Orchestration Context: Constructs the Sovereign Container 
     and steps through the execution chain without configuration layers.
     """
-    # 1. Enforce strict directory architecture alignment
-    # FIXED: Updated path to match existing data directory structure
-    simulators_dir = project_base
-    results_json_path = project_base / "schema" / "schema_merger_splitter_results_schema.json"
+    # 1. Enforce strict directory architecture alignment relative to the codebase root
+    repo_root = Path(__file__).resolve().parents[1]
+    results_json_path = repo_root / "schema" / "schema_merger_splitter_results_schema.json"
 
     # 2. Extract configuration payloads
     output_filename = input_data["output_filename"]
@@ -32,7 +31,7 @@ def run_pure_pipeline(input_data: dict, project_base: Path) -> PipelineInterface
     # 3. Construct the Sovereign Container
     container = MergerSplitterState(inputs=input_data)
 
-    # 4. Build the Minimal Step Chain
+    # 4. Build the Minimal Step Chain using the dynamically localized directory
     steps = [
         ExecuteMappingStep(sources, simulators_dir),
         WriteOutputStep(simulators_dir, output_filename, results_json_path)
@@ -50,14 +49,17 @@ if __name__ == "__main__":
         sys.exit(1)
 
     input_file_path = Path(sys.argv[1]).resolve()
-    base_dir = Path(__file__).resolve().parents[1]
+    repo_root = Path(__file__).resolve().parents[1]
+    
+    # Dynamic Path Resolution: Set context root to the task payload directory
+    simulators_dir = input_file_path.parent
 
     # Load and validate configuration payload matching input schema rules
     try:
         with input_file_path.open("r", encoding="utf-8") as f:
             input_payload = json.load(f)
         
-        input_schema_path = base_dir / "schema" / "schema_merger_splitter_input_schema.json"
+        input_schema_path = repo_root / "schema" / "schema_merger_splitter_input_schema.json"
         with input_schema_path.open("r", encoding="utf-8") as s_file:
             input_schema = json.load(s_file)
             
@@ -68,5 +70,5 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # Execute complete extraction mapping operations
-    final_view = run_pure_pipeline(input_payload, base_dir)
+    final_view = run_pure_pipeline(input_payload, simulators_dir)
     sys.exit(0 if final_view.success else 1)
