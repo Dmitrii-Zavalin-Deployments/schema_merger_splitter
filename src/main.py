@@ -67,7 +67,7 @@ def run_pure_pipeline(input_data: dict, simulators_dir: Path, execution_receipt_
 
     return container
 
-if __name__ == "__main__":
+def main():
     if len(sys.argv) < 2:
         logger.error("Missing input JSON configuration path.")
         sys.exit(1)
@@ -101,3 +101,6 @@ if __name__ == "__main__":
     # Execute complete operations
     final_view = run_pure_pipeline(input_payload, simulators_dir, execution_receipt_path)
     sys.exit(0 if final_view.success else 1)
+
+if __name__ == "__main__":  # pragma: no cover
+    main()
