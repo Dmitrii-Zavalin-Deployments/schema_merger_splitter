@@ -8,7 +8,6 @@ from typing import runtime_checkable
 # access to critical diagnostic fields. We use @runtime_checkable to verify
 # that our concrete implementation satisfies the protocol requirements.
 
-@runtime_checkable
 class ConcreteState(PipelineInterface):
     """A dummy state container used for structural validation."""
     def __init__(self, inputs, output, success, errors):

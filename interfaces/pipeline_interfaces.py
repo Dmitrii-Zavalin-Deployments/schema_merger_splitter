@@ -18,6 +18,7 @@ class StepInterface:
         raise NotImplementedError
 
 
+@runtime_checkable
 class PipelineInterface(Protocol):
     """
     Composite, read-only view of the finalized state.
