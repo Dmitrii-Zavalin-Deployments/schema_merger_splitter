@@ -60,9 +60,8 @@ class WriteOutputStep(StepInterface):
         self.results_path = results_path
 
     def execute(self, container: MergerSplitterState) -> None:
-        # Enforce schema validation matching output rules
-        # Inline validation for debugging state payload
-        schema_path = self.simulators_dir.parents[1] / "schema" / "schema_merger_splitter_output_schema.json"
+        # Anchor path to module file location to cleanly target project root
+        schema_path = Path(__file__).resolve().parents[2] / "schema" / "schema_merger_splitter_output_schema.json"
         with schema_path.open("r", encoding="utf-8") as f:
             schema = json.load(f)
         
