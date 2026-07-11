@@ -119,10 +119,11 @@ def test_write_output_schema_unreadable(tmp_path):
 
 
 def test_write_output_validation_fails(tmp_path):
-    # [Scenario: Line 92-94] The structural schema exists but the final assembled payload composition rules fail.
-    # A validation mismatch error must trigger an exception to intercept bad downstream data drops.
-    container = MergerSplitterState(inputs={})
-    container.inputs = {"invalid_shape": True}
+    # [Scenario: Line 92-94] The structural schema exists but the final assembled payload 
+    # composition rules fail.
+    
+    # FIX: Pass the inputs during instantiation to avoid the AttributeError
+    container = MergerSplitterState(inputs={"invalid_shape": True})
     container.success = True
     container.errors = []
     
