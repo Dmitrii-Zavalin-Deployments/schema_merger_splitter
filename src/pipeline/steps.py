@@ -20,6 +20,7 @@ class ExecuteMappingStep(StepInterface):
         
         for filename, rules in self.sources.items():
             path = self.simulators_dir / filename
+            logger.debug(f"DEBUG: Attempting to access path: {path.absolute()}")
             if not path.exists():
                 logger.error(f"Missing source file: {filename}")
                 errors.append(f"Missing source file: {filename}")
