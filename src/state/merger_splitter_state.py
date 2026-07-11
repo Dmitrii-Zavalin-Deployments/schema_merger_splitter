@@ -1,5 +1,5 @@
 from pathlib import Path
-from interfaces.step_interface import PipelineInterface
+from interfaces.pipeline_interfaces import PipelineInterface
 
 class MergerSplitterState(PipelineInterface):
     """
