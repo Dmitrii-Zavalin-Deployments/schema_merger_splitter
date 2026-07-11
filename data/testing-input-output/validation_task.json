@@ -1,0 +1,29 @@
+{
+  "output_filename": "validation_output.json",
+  "sources": {
+    "validation_input_1.json": [
+      {
+        "from": "$.p_min",
+        "to": "p_min"
+      },
+      {
+        "from": "$.p_max",
+        "to": "p_max"
+      },
+      {
+        "from": "$.v_min",
+        "to": "v_min"
+      },
+      {
+        "from": "$.v_max",
+        "to": "v_max"
+      }
+    ],
+    "validation_input_2.json": [
+      {
+        "from": "$.h2",
+        "to": "h"
+      }
+    ]
+  }
+}
