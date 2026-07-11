@@ -229,10 +229,10 @@ jobs:
         run: |
           # Verify that JSON output data has been deterministically compiled
           echo "--- Verifying Generated Output Structure ---"
-          ls -l data/testing-input-output/building_navier_stokes_output.json
+          ls -l data/testing-input-output/validation_output.json
           
           # Print output summary for logs tracing
-          head -n 30 data/testing-input-output/building_navier_stokes_output.json
+          head -n 30 data/testing-input-output/validation_output.json
 
       - name: 💾 Sync Testing Assets to Repository
         if: always()
