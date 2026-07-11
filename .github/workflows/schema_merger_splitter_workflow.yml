@@ -200,8 +200,10 @@ jobs:
           SAMPLER_PID=$!
           
           # Run core execution step targeting the specified execution configuration file directly
-          /usr/bin/time -v python src/main.py data/testing-input-output/validation_task.json 2> /tmp/memory_profile.log
-          
+          # /usr/bin/time -v python src/main.py data/testing-input-output/validation_task.json 2> /tmp/memory_profile.log
+          # Remove the time wrapper and redirection to see the real traceback in the console
+          python src/main.py data/testing-input-output/validation_task.json
+
           # Unwind profile monitoring immediately post-execution 
           kill $SAMPLER_PID
           

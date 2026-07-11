@@ -1,4 +1,5 @@
 import json
+import sys
 from pathlib import Path
 from jsonpath_ng import parse as jsonpath_parse
 from jsonschema import validate
@@ -60,26 +61,39 @@ class WriteOutputStep(StepInterface):
         self.results_path = results_path
 
     def execute(self, container: MergerSplitterState) -> None:
-        # Anchor path to module file location to cleanly target project root
+        # Determine schema path
         schema_path = Path(__file__).resolve().parents[2] / "schema" / "schema_merger_splitter_output_schema.json"
-        with schema_path.open("r", encoding="utf-8") as f:
-            schema = json.load(f)
         
+        # Verbose Debugging
+        if not schema_path.exists():
+            print(f"CRITICAL: Schema file not found at: {schema_path}", file=sys.stderr)
+            raise FileNotFoundError(f"Schema not found: {schema_path}")
+
+        try:
+            with schema_path.open("r", encoding="utf-8") as f:
+                schema = json.load(f)
+        except Exception as e:
+            print(f"CRITICAL: Failed to load schema: {e}", file=sys.stderr)
+            raise
+
         assembled = {"inputs": container.inputs, "results": {"success": container.success, "errors": container.errors}}
+        
         try:
             validate(instance=assembled, schema=schema)
         except Exception as e:
-            print(f"DEBUG: Schema Validation Failed: {e}")
+            print(f"SCHEMA VALIDATION FAILED:", file=sys.stderr)
+            print(f"Error: {e}", file=sys.stderr)
+            print(f"Payload: {json.dumps(assembled, indent=2)}", file=sys.stderr)
             raise
 
-        # Persist data payload if the operations succeeded completely
+        # Persist data payload
         if container.success:
             output_path = self.simulators_dir / self.output_filename
             output_path.parent.mkdir(parents=True, exist_ok=True)
             with output_path.open("w", encoding="utf-8") as f:
                 json.dump(container.merged_output, f, indent=2)
 
-        # Always write output execution metrics matching schema requirements
+        # Always write output execution metrics
         results_payload = {
             "success": container.success,
             "errors": container.errors
