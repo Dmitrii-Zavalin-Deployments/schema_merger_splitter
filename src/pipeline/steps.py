@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 from jsonpath_ng import parse as jsonpath_parse
 from jsonschema import validate
-from interfaces.step_interface import StepInterface
+from interfaces.pipeline_interfaces import StepInterface
 from src.state.merger_splitter_state import MergerSplitterState
 
 logger = logging.getLogger(__name__)
