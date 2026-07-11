@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 from jsonpath_ng import parse as jsonpath_parse
+from jsonschema import validate
 from interfaces.step_interface import StepInterface
 from src.state.merger_splitter_state import MergerSplitterState
 
@@ -60,7 +61,17 @@ class WriteOutputStep(StepInterface):
 
     def execute(self, container: MergerSplitterState) -> None:
         # Enforce schema validation matching output rules
-        container.validate_output_schema()
+        # Inline validation for debugging state payload
+        schema_path = self.simulators_dir.parents[1] / "schema" / "schema_merger_splitter_output_schema.json"
+        with schema_path.open("r", encoding="utf-8") as f:
+            schema = json.load(f)
+        
+        assembled = {"inputs": container.inputs, "results": {"success": container.success, "errors": container.errors}}
+        try:
+            validate(instance=assembled, schema=schema)
+        except Exception as e:
+            print(f"DEBUG: Schema Validation Failed: {e}")
+            raise
 
         # Persist data payload if the operations succeeded completely
         if container.success:

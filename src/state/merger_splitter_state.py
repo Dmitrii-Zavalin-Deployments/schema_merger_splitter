@@ -47,18 +47,3 @@ class MergerSplitterState(PipelineInterface):
     def errors(self, value: list):
         self._errors = list(value)
 
-    def validate_output_schema(self) -> None:
-        """Validates the final assembled state against the output parity schema."""
-        schema_path = self._base_dir / "schema" / "schema_merger_splitter_output_schema.json"
-        with schema_path.open("r", encoding="utf-8") as f:
-            schema = json.load(f)
-        
-        # Structure perfectly aligned with schema_merger_splitter_output_schema.json
-        assembled = {
-            "inputs": self._inputs,
-            "results": {
-                "success": self._success,
-                "errors": self._errors
-            }
-        }
-        validate(instance=assembled, schema=schema)
