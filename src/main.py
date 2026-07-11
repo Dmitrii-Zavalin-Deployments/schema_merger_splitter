@@ -1,10 +1,19 @@
 import sys
 import json
+import logging
 from pathlib import Path
 from jsonschema import validate
 from src.state.merger_splitter_state import MergerSplitterState
 from src.pipeline.steps import ExecuteMappingStep, WriteOutputStep
 from interfaces.step_interface import PipelineInterface
+
+# Configure Logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+    stream=sys.stdout
+)
+logger = logging.getLogger("main")
 
 def run_pure_pipeline(input_data: dict, project_base: Path) -> PipelineInterface:
     """
@@ -36,8 +45,7 @@ def run_pure_pipeline(input_data: dict, project_base: Path) -> PipelineInterface
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Error: Missing input JSON configuration path.")
-        print("Usage: python3 main.py <path to the input.json file>")
+        logger.error("Missing input JSON configuration path.")
         sys.exit(1)
 
     input_file_path = Path(sys.argv[1]).resolve()
@@ -53,8 +61,9 @@ if __name__ == "__main__":
             input_schema = json.load(s_file)
             
         validate(instance=input_payload, schema=input_schema)
+        logger.info("Configuration validated successfully.")
     except Exception as initialization_err:
-        print(f"Inbound Schema Integrity Failure: {initialization_err}", file=sys.stderr)
+        logger.critical(f"Inbound Schema Integrity Failure: {initialization_err}")
         sys.exit(1)
 
     # Execute complete extraction mapping operations
