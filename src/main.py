@@ -1,46 +1,62 @@
+import sys
+import json
 from pathlib import Path
+from jsonschema import validate
 from src.state.merger_splitter_state import MergerSplitterState
 from src.pipeline.steps import ExecuteMappingStep, WriteOutputStep
-from src.pipeline.pipeline_interface import PipelineInterface
+from interfaces.step_interface import PipelineInterface
 
-def run_pure_pipeline(mappings: dict, source_dir: Path, target_dir: Path) -> PipelineInterface:
+def run_pure_pipeline(input_data: dict, project_base: Path) -> PipelineInterface:
     """
     Direct Orchestration Context: Constructs the Sovereign Container 
-    and steps through the execution chain without any configuration layer.
+    and steps through the execution chain without configuration layers.
     """
-    # 1. Construct the Sovereign Container
-    container = MergerSplitterState()
+    # 1. Enforce strict directory architecture alignment
+    simulators_dir = project_base / "simulators"
+    results_json_path = project_base / "schema" / "schema_merger_splitter_results_schema.json"
 
-    # 2. Define concrete paths derived from direct arguments
-    output_json = target_dir / "compiled_output.json"
-    metrics_json = target_dir / "execution_metrics.json"
+    # 2. Extract configuration payloads
+    output_filename = input_data["output_filename"]
+    sources = input_data["sources"]
 
-    # 3. Build the Minimal Step Chain
+    # 3. Construct the Sovereign Container
+    container = MergerSplitterState(inputs=input_data)
+
+    # 4. Build the Minimal Step Chain
     steps = [
-        ExecuteMappingStep(mappings, source_dir),
-        WriteOutputStep(output_json, metrics_json)
+        ExecuteMappingStep(sources, simulators_dir),
+        WriteOutputStep(simulators_dir, output_filename, results_json_path)
     ]
 
-    # 4. Sequential loop execution
+    # 5. Sequential loop execution
     for step in steps:
         step.execute(container)
 
-    # 5. Return the read-only Exit Gate interface
     return container
 
 if __name__ == "__main__":
-    # Example of direct, zero-config domain execution invocation
-    BASE = Path(__file__).resolve().parents[1]
-    
-    EXPLICIT_MAPPINGS = {
-        "sensor_data.json": [{"from": "$.payload.temperature", "to": "env_temp"}],
-        "metadata.json":    [{"from": "$.system.identity_id", "to": "node_id"}]
-    }
-    
-    final_view = run_pure_pipeline(
-        mappings=EXPLICIT_MAPPINGS,
-        source_dir=BASE / "data" / "testing-input-output",
-        target_dir=BASE / "data" / "testing-input-output"
-    )
-    
-    print(f"Pipeline Completed via Exit Gate. State Success: {final_view.success}")
+    if len(sys.argv) < 2:
+        print("Error: Missing input JSON configuration path.")
+        print("Usage: python3 main.py <path to the input.json file>")
+        sys.exit(1)
+
+    input_file_path = Path(sys.argv[1]).resolve()
+    base_dir = Path(__file__).resolve().parents[1]
+
+    # Load and validate configuration payload matching input schema rules
+    try:
+        with input_file_path.open("r", encoding="utf-8") as f:
+            input_payload = json.load(f)
+        
+        input_schema_path = base_dir / "schema" / "schema_merger_splitter_input_schema.json"
+        with input_schema_path.open("r", encoding="utf-8") as s_file:
+            input_schema = json.load(s_file)
+            
+        validate(instance=input_payload, schema=input_schema)
+    except Exception as initialization_err:
+        print(f"Inbound Schema Integrity Failure: {initialization_err}", file=sys.stderr)
+        sys.exit(1)
+
+    # Execute complete extraction mapping operations
+    final_view = run_pure_pipeline(input_payload, base_dir)
+    sys.exit(0 if final_view.success else 1)

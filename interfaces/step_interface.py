@@ -10,7 +10,6 @@ class StepInterface:
         super().__init_subclass__(**kwargs)
         ALLOWED_MEMBERS = {"execute"} 
         for name in cls.__dict__:
-            # Allows dunder methods like __init__ while blocking custom public/private methods
             if not name.startswith("__") and name not in ALLOWED_MEMBERS:
                 raise TypeError(f"CONSTITUTION VIOLATION: '{name}' is forbidden.")
 
@@ -23,10 +22,12 @@ class PipelineInterface(Protocol):
     """
     Composite, read-only view of the finalized state.
     Acts as the explicit exit gate for the module.
-    
-    Zero-Config Blueprint: Exposes pure domain processing attributes 
-    and entirely omits configuration management overhead.
     """
+
+    @property
+    def inputs(self) -> dict:
+        """Access to the original source mapping configuration input."""
+        ...
 
     @property
     def merged_output(self) -> dict:

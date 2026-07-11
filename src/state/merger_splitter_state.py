@@ -1,20 +1,25 @@
 import json
 from pathlib import Path
 from jsonschema import validate
-from src.pipeline.pipeline_interface import PipelineInterface
+from interfaces.step_interface import PipelineInterface
 
 class MergerSplitterState(PipelineInterface):
     """
     Sovereign Container: Aggregates the pure domain output state.
-    Enforces a strict zero-default policy with no configuration tracking.
+    Enforces a strict zero-default policy with no external configuration tracking.
     """
-    __slots__ = ["_merged_output", "_success", "_errors", "_base_dir"]
+    __slots__ = ["_inputs", "_merged_output", "_success", "_errors", "_base_dir"]
 
-    def __init__(self):
+    def __init__(self, inputs: dict):
+        self._inputs = inputs
         self._merged_output = {}
         self._success = False
         self._errors = []
         self._base_dir = Path(__file__).resolve().parents[2]
+
+    @property
+    def inputs(self) -> dict:
+        return self._inputs
 
     @property
     def merged_output(self) -> dict:
@@ -48,8 +53,12 @@ class MergerSplitterState(PipelineInterface):
         with schema_path.open("r", encoding="utf-8") as f:
             schema = json.load(f)
         
+        # Structure perfectly aligned with schema_merger_splitter_output_schema.json
         assembled = {
-            "merged_output": self._merged_output,
-            "metrics": {"success": self._success, "errors": self._errors}
+            "inputs": self._inputs,
+            "results": {
+                "success": self._success,
+                "errors": self._errors
+            }
         }
         validate(instance=assembled, schema=schema)
