@@ -1,4 +1,3 @@
-import pytest
 from interfaces.pipeline_interfaces import PipelineInterface
 from typing import runtime_checkable
 
