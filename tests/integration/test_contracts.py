@@ -37,8 +37,8 @@ def test_results_contract_parity():
                     {"from": "$.height.h1", "to": "h"}
                 ]
             }
-        }
-        project_base = Path("data/testing-input-output/")
+    }
+    project_base = Path("data/testing-input-output/")
         
     # Execute pipeline
     run_pure_pipeline(pipeline_config, project_base)
