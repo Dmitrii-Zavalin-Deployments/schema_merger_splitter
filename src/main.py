@@ -1,6 +1,7 @@
 import sys
 import json
 import logging
+from datetime import datetime
 from pathlib import Path
 from jsonschema import validate
 from src.state.merger_splitter_state import MergerSplitterState
@@ -41,8 +42,8 @@ def run_pure_pipeline(input_data: dict, simulators_dir: Path, execution_receipt_
     for step in steps:
         step.execute(container)
 
-    # 5. GENERATE EXECUTION RECEIPT (Matches schema_merger_splitter_output_schema)
-    # Construct the structural receipt matching the requirements
+    # 5. GENERATE EXECUTION RECEIPT
+    # This construction adheres to the schema output requirements
     execution_receipt = {
         "inputs": input_data,
         "results": {
@@ -51,7 +52,7 @@ def run_pure_pipeline(input_data: dict, simulators_dir: Path, execution_receipt_
         }
     }
 
-    # Validate our programmatic receipt output against the target output schema
+    # Validate receipt structure before persistence
     try:
         with output_schema_path.open("r", encoding="utf-8") as os_file:
             output_schema = json.load(os_file)
@@ -60,7 +61,7 @@ def run_pure_pipeline(input_data: dict, simulators_dir: Path, execution_receipt_
         # Write the receipt file to disk for GitHub Actions tracking
         with execution_receipt_path.open("w", encoding="utf-8") as r_file:
             json.dump(execution_receipt, r_file, indent=2)
-        logger.info(f"Execution receipt successfully persisted to {execution_receipt_path}")
+        logger.info(f"Execution receipt persisted: {execution_receipt_path.name}")
     except Exception as receipt_err:
         logger.error(f"Failed to generate valid pipeline execution receipt: {receipt_err}")
 
@@ -76,9 +77,13 @@ if __name__ == "__main__":
     
     # Context Locations
     simulators_dir = input_file_path.parent
-    execution_receipt_path = simulators_dir / "execution_receipt.json"
+    
+    # Generate timestamped filename for historical tracking
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    receipt_filename = f"schema_merger_splitter_execution_receipt_{timestamp}.json"
+    execution_receipt_path = simulators_dir / receipt_filename
 
-    # Load and validate configuration payload matching input schema rules
+    # Load and validate configuration payload
     try:
         with input_file_path.open("r", encoding="utf-8") as f:
             input_payload = json.load(f)
