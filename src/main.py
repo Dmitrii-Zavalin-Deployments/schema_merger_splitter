@@ -22,7 +22,7 @@ def run_pure_pipeline(input_data: dict, project_base: Path) -> PipelineInterface
     """
     # 1. Enforce strict directory architecture alignment
     # FIXED: Updated path to match existing data directory structure
-    simulators_dir = project_base / "data" / "testing-input-output"
+    simulators_dir = project_base
     results_json_path = project_base / "schema" / "schema_merger_splitter_results_schema.json"
 
     # 2. Extract configuration payloads
