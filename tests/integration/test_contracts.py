@@ -24,19 +24,19 @@ def test_input_contract_parity():
 
 def test_results_contract_parity():
     # Define pipeline inputs and base path for readability
-        pipeline_config = {
-            "output_filename": "validation_output.json",
-            "sources": {
-                "validation_input_1.json": [
-                    {"from": "$.p2", "to": "p_min"},
-                    {"from": "$.p1", "to": "p_max"}
-                ],
-                "validation_input_2.json": [
-                    {"from": "$.velocity.v1", "to": "v_min"},
-                    {"from": "$.velocity.v2", "to": "v_max"},
-                    {"from": "$.height.h1", "to": "h"}
-                ]
-            }
+    pipeline_config = {
+        "output_filename": "validation_output.json",
+        "sources": {
+            "validation_input_1.json": [
+                {"from": "$.p2", "to": "p_min"},
+                {"from": "$.p1", "to": "p_max"}
+            ],
+            "validation_input_2.json": [
+                {"from": "$.velocity.v1", "to": "v_min"},
+                {"from": "$.velocity.v2", "to": "v_max"},
+                {"from": "$.height.h1", "to": "h"}
+            ]
+        }
     }
     project_base = Path("data/testing-input-output/")
         
