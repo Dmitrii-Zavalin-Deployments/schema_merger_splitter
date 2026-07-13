@@ -69,12 +69,12 @@ def run_pure_pipeline(input_data: dict, simulators_dir: Path, output_filename: s
 def main():
     parser = argparse.ArgumentParser(description="Schema Merger–Splitter Engine CLI")
     parser.add_argument("--input_output_folder", help="Folder path containing data payloads")
-    parser.add_argument("--input_file_name", help="Task input JSON configuration file name")
-    parser.add_argument("--output_file_name", help="Output target file name for merged results")
+    parser.add_argument("--input_file", help="Task input JSON configuration file name")
+    parser.add_argument("--output_file", help="Output target file name for merged results")
 
     try:
         args = parser.parse_args()
-        if not args.input_output_folder or not args.input_file_name or not args.output_file_name:
+        if not args.input_output_folder or not args.input_file or not args.output_file:
             logger.error("Missing required parameter contract. All explicit flags must be populated.")
             sys.exit(1)
     except Exception as parse_err:
@@ -82,8 +82,8 @@ def main():
         sys.exit(1)
 
     simulators_dir = Path(args.input_output_folder).resolve()
-    input_file_path = simulators_dir / args.input_file_name
-    output_filename = args.output_file_name
+    input_file_path = simulators_dir / args.input_file
+    output_filename = args.output_file
     repo_root = Path(__file__).resolve().parents[1]
     
     # Generate timestamped filename for historical tracking

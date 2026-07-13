@@ -70,8 +70,8 @@ def test_main_integrity_failure(tmp_path):
     with patch("sys.argv", [
         "src/main.py", 
         "--input_output_folder", str(tmp_path), 
-        "--input_file_name", "corrupted_config.json", 
-        "--output_file_name", "out.json"
+        "--input_file", "corrupted_config.json", 
+        "--output_file", "out.json"
     ]):
         with pytest.raises(SystemExit) as exc_info:
             main()
@@ -90,8 +90,8 @@ def test_main_execution_success(tmp_path):
     with patch("sys.argv", [
         "src/main.py", 
         "--input_output_folder", str(tmp_path), 
-        "--input_file_name", "valid_config.json", 
-        "--output_file_name", "out.json"
+        "--input_file", "valid_config.json", 
+        "--output_file", "out.json"
     ]):
         with patch("src.main.Path.open"):
             with patch("json.load", return_value={"sources": {}}):
@@ -115,8 +115,8 @@ def test_main_execution_pipeline_failure(tmp_path):
     with patch("sys.argv", [
         "src/main.py", 
         "--input_output_folder", str(tmp_path), 
-        "--input_file_name", "valid_config.json", 
-        "--output_file_name", "out.json"
+        "--input_file", "valid_config.json", 
+        "--output_file", "out.json"
     ]):
         with patch("src.main.Path.open"):
             with patch("json.load", return_value={"sources": {}}):

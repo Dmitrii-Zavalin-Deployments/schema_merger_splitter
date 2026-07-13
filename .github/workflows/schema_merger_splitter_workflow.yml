@@ -202,8 +202,8 @@ jobs:
           # Run core execution step using explicit parameters
           /usr/bin/time -v python src/main.py \
             --input_output_folder data/testing-input-output \
-            --input_file_name validation_task.json \
-            --output_file_name validation_output.json \
+            --input_file validation_task.json \
+            --output_file validation_output.json \
             2> /tmp/memory_profile.log
 
           # Unwind profile monitoring immediately post-execution 
