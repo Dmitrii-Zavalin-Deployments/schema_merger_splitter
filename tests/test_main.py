@@ -34,6 +34,13 @@ def test_main_missing_arguments():
             main()
         assert exc_info.value.code == 1
 
+def test_main_parse_args_exception():
+    """Targets lines 81-82 by simulating an unexpected explosion during parsing."""
+    with patch("argparse.ArgumentParser.parse_args", side_effect=RuntimeError("Forced parsing explosion")):
+        with pytest.raises(SystemExit) as exc_info:
+            main()
+        assert exc_info.value.code == 1
+
 def test_main_integrity_failure(tmp_path):
     bad_config = tmp_path / "corrupted_config.json"
     bad_config.write_text("{ unparseable raw payload ...", encoding="utf-8")
