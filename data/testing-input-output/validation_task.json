@@ -1,5 +1,4 @@
 {
-  "output_filename": "validation_output.json",
   "sources": {
     "validation_input_1.json": [
       {
