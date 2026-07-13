@@ -8,10 +8,6 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "output_filename": {
-          "type": "string",
-          "description": "File name (not path) where the merged JSON must be written inside the simulators/ directory."
-        },
         "sources": {
           "type": "object",
           "description": "Mapping of source filenames to their extraction rules. Each key must be a file name inside the simulators/ directory.",
@@ -40,7 +36,6 @@
         }
       },
       "required": [
-        "output_filename",
         "sources"
       ]
     },

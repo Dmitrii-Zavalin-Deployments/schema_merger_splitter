@@ -1,6 +1,7 @@
 import sys
 import json
 import logging
+import argparse
 from datetime import datetime
 from pathlib import Path
 from jsonschema import validate
@@ -16,7 +17,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger("main")
 
-def run_pure_pipeline(input_data: dict, simulators_dir: Path, execution_receipt_path: Path) -> PipelineInterface:
+def run_pure_pipeline(input_data: dict, simulators_dir: Path, output_filename: str, execution_receipt_path: Path) -> PipelineInterface:
     """
     Direct Orchestration Context: Constructs the Sovereign Container 
     and steps through the execution chain without configuration layers.
@@ -26,7 +27,6 @@ def run_pure_pipeline(input_data: dict, simulators_dir: Path, execution_receipt_
     output_schema_path = repo_root / "schema" / "schema_merger_splitter_output_schema.json"
 
     # 1. Extract configuration payloads
-    output_filename = input_data["output_filename"]
     sources = input_data["sources"]
 
     # 2. Construct the Sovereign Container State
@@ -43,7 +43,6 @@ def run_pure_pipeline(input_data: dict, simulators_dir: Path, execution_receipt_
         step.execute(container)
 
     # 5. GENERATE EXECUTION RECEIPT
-    # This construction adheres to the schema output requirements
     execution_receipt = {
         "inputs": input_data,
         "results": {
@@ -68,15 +67,24 @@ def run_pure_pipeline(input_data: dict, simulators_dir: Path, execution_receipt_
     return container
 
 def main():
-    if len(sys.argv) < 2:
-        logger.error("Missing input JSON configuration path.")
+    parser = argparse.ArgumentParser(description="Schema Merger–Splitter Engine CLI")
+    parser.add_argument("--input_output_folder", help="Folder path containing data payloads")
+    parser.add_argument("--input_file_name", help="Task input JSON configuration file name")
+    parser.add_argument("--output_file_name", help="Output target file name for merged results")
+
+    try:
+        args = parser.parse_args()
+        if not args.input_output_folder or not args.input_file_name or not args.output_file_name:
+            logger.error("Missing required parameter contract. All explicit flags must be populated.")
+            sys.exit(1)
+    except Exception as parse_err:
+        logger.critical(f"Parameter interface error: {parse_err}")
         sys.exit(1)
 
-    input_file_path = Path(sys.argv[1]).resolve()
+    simulators_dir = Path(args.input_output_folder).resolve()
+    input_file_path = simulators_dir / args.input_file_name
+    output_filename = args.output_file_name
     repo_root = Path(__file__).resolve().parents[1]
-    
-    # Context Locations
-    simulators_dir = input_file_path.parent
     
     # Generate timestamped filename for historical tracking
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -99,7 +107,7 @@ def main():
         sys.exit(1)
 
     # Execute complete operations
-    final_view = run_pure_pipeline(input_payload, simulators_dir, execution_receipt_path)
+    final_view = run_pure_pipeline(input_payload, simulators_dir, output_filename, execution_receipt_path)
     sys.exit(0 if final_view.success else 1)
 
 if __name__ == "__main__":  # pragma: no cover
