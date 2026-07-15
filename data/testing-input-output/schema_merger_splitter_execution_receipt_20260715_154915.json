@@ -1,0 +1,38 @@
+{
+  "inputs": {
+    "sources": {
+      "validation_input_1.json": [
+        {
+          "from": "$.p1",
+          "to": "p_min"
+        },
+        {
+          "from": "$.p2",
+          "to": "p_max"
+        },
+        {
+          "from": "$.v1",
+          "to": "v_min"
+        },
+        {
+          "from": "$.v2",
+          "to": "v_max"
+        }
+      ],
+      "validation_input_2.json": [
+        {
+          "from": "$.height.h2",
+          "to": "h"
+        },
+        {
+          "from": "$.properties",
+          "to": "properties"
+        }
+      ]
+    }
+  },
+  "results": {
+    "success": true,
+    "errors": []
+  }
+}
