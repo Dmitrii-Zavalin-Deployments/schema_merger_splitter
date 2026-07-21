@@ -19,6 +19,7 @@
 • data/testing-input-output/schema_merger_splitter_execution_receipt_20260711_181741.json
 • data/testing-input-output/schema_merger_splitter_execution_receipt_20260711_174822.json
 • data/testing-input-output/schema_merger_splitter_execution_receipt_20260711_182433.json
+• data/testing-input-output/schema_merger_splitter_execution_receipt_20260717_184238.json
 • data/testing-input-output/schema_merger_splitter_execution_receipt_20260711_175915.json
 • data/testing-input-output/schema_merger_splitter_execution_receipt_20260715_155240.json
 • data/testing-input-output/schema_merger_splitter_execution_receipt_20260713_184231.json
@@ -38,6 +39,7 @@
 • data/testing-input-output/schema_merger_splitter_execution_receipt_20260711_174037.json
 • interfaces/pipeline_interfaces.py
 • interfaces/__init__.py
+• merged_content.txt
 • requirements.txt
 • src/__init__.py
 • src/main.py
@@ -576,6 +578,13 @@ def test_main_execution_pipeline_failure(tmp_path):
 # 🧩 Schema‑Merger‑Splitter Performance Audit
 ### 📚 Resources & Documentation
 - **Tutorial/Book:** ***currently in development***
+---
+### Audit: 2026-07-17 18:42:40 UTC
+- **Branch:** `main`
+- **Status:** `success`
+- **Run:** [Detailed Execution Logs](https://github.com/Dmitrii-Zavalin-Deployments/schema_merger_splitter/actions/runs/29604780924)
+- **CPU Load:** `0.0%`
+- **Memory Usage:** `22/15988MB`
 ---
 ### Audit: 2026-07-15 15:52:42 UTC
 - **Branch:** `main`
@@ -1662,6 +1671,46 @@ For more information on this, and how to apply and follow the GNU AGPL, see
   }
 }========== END OF FILE: data/testing-input-output/schema_merger_splitter_execution_receipt_20260711_182433.json ==========
 
+========== START OF FILE: data/testing-input-output/schema_merger_splitter_execution_receipt_20260717_184238.json ==========
+{
+  "inputs": {
+    "sources": {
+      "validation_input_1.json": [
+        {
+          "from": "$.p1",
+          "to": "p_min"
+        },
+        {
+          "from": "$.p2",
+          "to": "p_max"
+        },
+        {
+          "from": "$.v1",
+          "to": "v_min"
+        },
+        {
+          "from": "$.v2",
+          "to": "v_max"
+        }
+      ],
+      "validation_input_2.json": [
+        {
+          "from": "$.height.h2",
+          "to": "h"
+        },
+        {
+          "from": "$.properties",
+          "to": "properties"
+        }
+      ]
+    }
+  },
+  "results": {
+    "success": true,
+    "errors": []
+  }
+}========== END OF FILE: data/testing-input-output/schema_merger_splitter_execution_receipt_20260717_184238.json ==========
+
 ========== START OF FILE: data/testing-input-output/schema_merger_splitter_execution_receipt_20260711_175915.json ==========
 {
   "inputs": {
@@ -2322,6 +2371,9 @@ class PipelineInterface(Protocol):
 
 ========== START OF FILE: interfaces/__init__.py ==========
 ========== END OF FILE: interfaces/__init__.py ==========
+
+========== START OF FILE: merged_content.txt ==========
+========== END OF FILE: merged_content.txt ==========
 
 ========== START OF FILE: requirements.txt ==========
 # Foundation (Rule 9: Hybrid Memory)
