@@ -289,23 +289,63 @@ jobs:
           EOF
           )
 
-          HEADER="# 🧩 Schema‑Merger‑Splitter Performance Audit"
-          TUTORIAL="### 📚 Resources & Documentation
+          
+          # Extract JSON previews dynamically
+          INPUT1=$(jq -r 'to_entries | map("\(.key): \(.value)") | .[0:5] | join("<br>")' data/testing-input-output/validation_input_1.json)
+          INPUT2=$(jq -r 'to_entries | map("\(.key): \(.value)") | .[0:5] | join("<br>")' data/testing-input-output/validation_input_2.json)
+          OUTPUT=$(jq -r 'to_entries | map("\(.key): \(.value)") | .[0:5] | join("<br>")' data/testing-input-output/validation_output.json)
+
+          HEADER=$(cat <<EOF
+          # 🧩 Schema‑Merger‑Splitter
+
+          ## 🔗 Input → Merge → Output Pipeline
+          A high‑fidelity schema transformation engine designed for structured JSON ingestion,
+          mapping, merging, validation, and CI‑optimized artifact generation.
+
+          ### 🖼️ Pipeline Preview (Input → Merge → Output)
+
+          <table align="center" style="border-collapse: collapse; background: transparent;">
+            <tr>
+              <td style="padding: 8px; vertical-align: top;">
+                <strong>validation_input_1.json</strong><br>
+                <div style="font-size: 14px; color: #ccc;">$INPUT1</div>
+              </td>
+              <td style="padding: 12px; font-size: 32px; color: #666; vertical-align: middle;">
+                &rarr;
+              </td>
+              <td style="padding: 8px; vertical-align: top;">
+                <strong>validation_input_2.json</strong><br>
+                <div style="font-size: 14px; color: #ccc;">$INPUT2</div>
+              </td>
+              <td style="padding: 12px; font-size: 32px; color: #666; vertical-align: middle;">
+                &rarr;
+              </td>
+              <td style="padding: 8px; vertical-align: top;">
+                <strong>validation_output.json</strong><br>
+                <div style="font-size: 14px; color: #ccc;">$OUTPUT</div>
+              </td>
+            </tr>
+          </table>
+
+          ### 📚 Resources & Documentation
           - **Tutorial/Book:** ***currently in development***
-          ---"
+
+          ---
+
+          ### 🧮 Performance Audit:
+          EOF
+          )
 
           if [ -f "README.md" ]; then
               # Extract everything after the first horizontal rule to preserve the body
               sed '1,/---/d' README.md > old_body.tmp
               echo "$HEADER" > README.md
-              echo "$TUTORIAL" >> README.md
               echo "$NEW_ENTRY" >> README.md
               cat old_body.tmp >> README.md
               rm old_body.tmp
           else
               # Initialize new README
               echo "$HEADER" > README.md
-              echo "$TUTORIAL" >> README.md
               echo "$NEW_ENTRY" >> README.md
           fi
 
