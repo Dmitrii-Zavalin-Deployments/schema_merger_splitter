@@ -8,9 +8,9 @@ mapping, merging, validation, and CI‑optimized artifact generation.
 
 <table align="center" style="border-collapse: collapse; background: transparent;">
   <tr>
-    <td style="padding: 12px; vertical-align: top; text-align: left;">
+    <td style="padding: 10px; vertical-align: top; text-align: left;">
       <strong>validation_input_1.json</strong><br>
-      <pre style="margin-top: 6px; margin-bottom: 0px; font-size: 12px;"><code>{
+      <pre style="margin-top: 6px; margin-bottom: 0px; font-size: 10px;"><code>{
   "p1": 4.8E+6,
   "p2": 3.2E+6,
   "v1": 45.0,
@@ -19,12 +19,12 @@ mapping, merging, validation, and CI‑optimized artifact generation.
   "h2": 350.0
 }</code></pre>
     </td>
-    <td rowspan="3" style="padding: 12px; font-size: 28px; color: #666; vertical-align: middle; text-align: center;">
+    <td rowspan="3" style="padding: 8px; font-size: 24px; color: #666; vertical-align: middle; text-align: center;">
       &rarr;
     </td>
-    <td rowspan="3" style="padding: 12px; vertical-align: top; text-align: left;">
+    <td rowspan="3" style="padding: 10px; vertical-align: top; text-align: left;">
       <strong>validation_task.json</strong><br>
-      <pre style="margin-top: 6px; margin-bottom: 0px; font-size: 12px;"><code>{
+      <pre style="margin-top: 6px; margin-bottom: 0px; font-size: 10px;"><code>{
   "sources": {
     "validation_input_1.json": [
       {
@@ -57,12 +57,12 @@ mapping, merging, validation, and CI‑optimized artifact generation.
   }
 }</code></pre>
     </td>
-    <td rowspan="3" style="padding: 12px; font-size: 28px; color: #666; vertical-align: middle; text-align: center;">
+    <td rowspan="3" style="padding: 8px; font-size: 24px; color: #666; vertical-align: middle; text-align: center;">
       &rarr;
     </td>
-    <td rowspan="3" style="padding: 12px; vertical-align: top; text-align: left;">
+    <td rowspan="3" style="padding: 10px; vertical-align: top; text-align: left;">
       <strong>validation_output.json</strong><br>
-      <pre style="margin-top: 6px; margin-bottom: 0px; font-size: 12px;"><code>{
+      <pre style="margin-top: 6px; margin-bottom: 0px; font-size: 10px;"><code>{
   "p_min": 4800000.0,
   "p_max": 3200000.0,
   "v_min": 45.0,
@@ -76,14 +76,14 @@ mapping, merging, validation, and CI‑optimized artifact generation.
     </td>
   </tr>
   <tr>
-    <td style="padding: 4px; text-align: center; font-size: 22px; font-weight: bold; color: #888;">
+    <td style="padding: 2px; text-align: center; font-size: 20px; font-weight: bold; color: #888;">
       +
     </td>
   </tr>
   <tr>
-    <td style="padding: 12px; vertical-align: top; text-align: left;">
+    <td style="padding: 10px; vertical-align: top; text-align: left;">
       <strong>validation_input_2.json</strong><br>
-      <pre style="margin-top: 6px; margin-bottom: 0px; font-size: 12px;"><code>{
+      <pre style="margin-top: 6px; margin-bottom: 0px; font-size: 10px;"><code>{
   "pressure": {
     "p1": 1500.0,
     "p2": 324.0
@@ -111,6 +111,13 @@ mapping, merging, validation, and CI‑optimized artifact generation.
 ---
 
 ### 🧮 Performance Audit:
+### Audit: 2026-07-22 19:30:28 UTC
+- **Branch:** `main`
+- **Status:** `success`
+- **Run:** [Detailed Execution Logs](https://github.com/Dmitrii-Zavalin-Deployments/schema_merger_splitter/actions/runs/29951195812)
+- **CPU Load:** `0.0%`
+- **Memory Usage:** `21/15989MB`
+---
 ### Audit: 2026-07-22 19:25:34 UTC
 - **Branch:** `main`
 - **Status:** `success`
