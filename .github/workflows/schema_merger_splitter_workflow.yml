@@ -289,10 +289,10 @@ jobs:
           EOF
           )
 
-          # Extract full formatted JSON strings for inputs, task, and output
+          # Extract full formatted JSON strings for inputs and output, and parsed task mapping
           INPUT1=$(jq '.' data/testing-input-output/validation_input_1.json)
           INPUT2=$(jq '.' data/testing-input-output/validation_input_2.json)
-          TASK=$(jq '.' data/testing-input-output/validation_task.json)
+          TASK=$(jq -r '.sources | to_entries | map("<strong>\(.key)</strong><br>" + ([.value[] | "<code>\(.from)</code> &rarr; <code>\(.to)</code>"] | join("<br>"))) | join("<br><br>")' data/testing-input-output/validation_task.json)
           OUTPUT=$(jq '.' data/testing-input-output/validation_output.json)
 
           HEADER=$(cat <<EOF
@@ -314,8 +314,8 @@ jobs:
                 &rarr;
               </td>
               <td rowspan="3" style="padding: 10px; vertical-align: top; text-align: left;">
-                <strong>validation_task.json</strong><br>
-                <pre style="margin-top: 6px; margin-bottom: 0px; font-size: 10px;"><code>$TASK</code></pre>
+                <strong>validation_task.json (Selection)</strong><br>
+                <div style="font-size: 13px; margin-top: 6px; line-height: 1.4;">$TASK</div>
               </td>
               <td rowspan="3" style="padding: 8px; font-size: 24px; color: #666; vertical-align: middle; text-align: center;">
                 &rarr;
