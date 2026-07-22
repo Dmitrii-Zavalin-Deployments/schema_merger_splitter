@@ -27,7 +27,7 @@ mapping, merging, validation, and CI‑optimized artifact generation.
     </td>
     <td style="padding: 8px; vertical-align: top;">
       <strong>validation_output.json</strong><br>
-      <div style="font-size: 14px; color: #ccc;">p_min: 4800000.0<br>p_max: 3200000.0<br>v_min: 45.0<br>v_max: 62.0<br>h: 0.1</div>
+      <div style="font-size: 14px; color: #ccc;">p_min: 4800000.0<br>p_max: 3200000.0<br>v_min: 45.0<br>v_max: 62.0<br>h: 0.1<br>properties: {"rho":1000.0,"temperature":10.0}</div>
     </td>
   </tr>
 </table>
@@ -35,6 +35,15 @@ mapping, merging, validation, and CI‑optimized artifact generation.
 ### 📚 Resources & Documentation
 - **Tutorial/Book:** ***currently in development***
 
+---
+
+### 🧮 Performance Audit:
+### Audit: 2026-07-22 17:08:27 UTC
+- **Branch:** `main`
+- **Status:** `success`
+- **Run:** [Detailed Execution Logs](https://github.com/Dmitrii-Zavalin-Deployments/schema_merger_splitter/actions/runs/29941017624)
+- **CPU Load:** `0.0%`
+- **Memory Usage:** `21/15989MB`
 ---
 
 ### 🧮 Performance Audit:
