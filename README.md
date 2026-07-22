@@ -23,39 +23,8 @@ mapping, merging, validation, and CI‑optimized artifact generation.
       &rarr;
     </td>
     <td rowspan="3" style="padding: 10px; vertical-align: top; text-align: left;">
-      <strong>validation_task.json</strong><br>
-      <pre style="margin-top: 6px; margin-bottom: 0px; font-size: 10px;"><code>{
-  "sources": {
-    "validation_input_1.json": [
-      {
-        "from": "$.p1",
-        "to": "p_min"
-      },
-      {
-        "from": "$.p2",
-        "to": "p_max"
-      },
-      {
-        "from": "$.v1",
-        "to": "v_min"
-      },
-      {
-        "from": "$.v2",
-        "to": "v_max"
-      }
-    ],
-    "validation_input_2.json": [
-      {
-        "from": "$.height.h2",
-        "to": "h"
-      },
-      {
-        "from": "$.properties",
-        "to": "properties"
-      }
-    ]
-  }
-}</code></pre>
+      <strong>validation_task.json (Selection)</strong><br>
+      <div style="font-size: 13px; margin-top: 6px; line-height: 1.4;"><strong>validation_input_1.json</strong><br><code>$.p1</code> &rarr; <code>p_min</code><br><code>$.p2</code> &rarr; <code>p_max</code><br><code>$.v1</code> &rarr; <code>v_min</code><br><code>$.v2</code> &rarr; <code>v_max</code><br><br><strong>validation_input_2.json</strong><br><code>$.height.h2</code> &rarr; <code>h</code><br><code>$.properties</code> &rarr; <code>properties</code></div>
     </td>
     <td rowspan="3" style="padding: 8px; font-size: 24px; color: #666; vertical-align: middle; text-align: center;">
       &rarr;
@@ -111,6 +80,13 @@ mapping, merging, validation, and CI‑optimized artifact generation.
 ---
 
 ### 🧮 Performance Audit:
+### Audit: 2026-07-22 19:36:01 UTC
+- **Branch:** `main`
+- **Status:** `success`
+- **Run:** [Detailed Execution Logs](https://github.com/Dmitrii-Zavalin-Deployments/schema_merger_splitter/actions/runs/29951591872)
+- **CPU Load:** `0.0%`
+- **Memory Usage:** `22/15988MB`
+---
 ### Audit: 2026-07-22 19:30:28 UTC
 - **Branch:** `main`
 - **Status:** `success`
