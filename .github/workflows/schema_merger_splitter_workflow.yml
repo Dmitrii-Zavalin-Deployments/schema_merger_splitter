@@ -293,7 +293,7 @@ jobs:
           INPUT1=$(jq -r 'to_entries | map("\(.key): \(.value)") | .[0:5] | join("<br>")' data/testing-input-output/validation_input_1.json)
           INPUT2=$(jq -r 'to_entries | map("\(.key): \(.value)") | .[0:5] | join("<br>")' data/testing-input-output/validation_input_2.json)
           TASK=$(jq -r '.sources | to_entries | map("<strong>\(.key)</strong><br>" + ([.value[] | "<code>\(.from)</code> &rarr; <code>\(.to)</code>"] | join("<br>"))) | join("<br><br>")' data/testing-input-output/validation_task.json)
-          OUTPUT=$(jq -r 'to_entries | map("\(.key): \(.value)") | .[0:5] | join("<br>")' data/testing-input-output/validation_output.json)
+          OUTPUT=$(jq -r 'to_entries | map("\(.key): \(.value)") | join("<br>")' data/testing-input-output/validation_output.json)
 
           HEADER=$(cat <<EOF
           # 🧩 Schema‑Merger‑Splitter
