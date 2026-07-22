@@ -10,12 +10,8 @@ mapping, merging, validation, and CI‑optimized artifact generation.
   <tr>
     <td style="padding: 8px; vertical-align: top;">
       <strong>validation_input_1.json</strong><br>
-      <div style="font-size: 14px; color: #ccc;">p1: 4.8E+6<br>p2: 3.2E+6<br>v1: 45.0<br>v2: 62.0<br>h1: 120.0</div>
-    </td>
-    <td style="padding: 12px; font-size: 24px; color: #666; vertical-align: middle;">
-      +
-    </td>
-    <td style="padding: 8px; vertical-align: top;">
+      <div style="font-size: 14px; color: #ccc; margin-bottom: 8px;">p1: 4.8E+6<br>p2: 3.2E+6<br>v1: 45.0<br>v2: 62.0<br>h1: 120.0</div>
+      <div style="text-align: center; font-size: 20px; color: #666; margin: 6px 0;">+</div>
       <strong>validation_input_2.json</strong><br>
       <div style="font-size: 14px; color: #ccc;">pressure: {"p1":1500.0,"p2":324.0}<br>velocity: {"v1":0.5,"v2":0.8}<br>height: {"h1":0.0,"h2":0.1}<br>properties: {"rho":1000.0,"temperature":10.0}</div>
     </td>
@@ -39,6 +35,15 @@ mapping, merging, validation, and CI‑optimized artifact generation.
 ### 📚 Resources & Documentation
 - **Tutorial/Book:** ***currently in development***
 
+---
+
+### 🧮 Performance Audit:
+### Audit: 2026-07-22 17:04:36 UTC
+- **Branch:** `main`
+- **Status:** `success`
+- **Run:** [Detailed Execution Logs](https://github.com/Dmitrii-Zavalin-Deployments/schema_merger_splitter/actions/runs/29940751804)
+- **CPU Load:** `0.0%`
+- **Memory Usage:** `22/15989MB`
 ---
 
 ### 🧮 Performance Audit:
