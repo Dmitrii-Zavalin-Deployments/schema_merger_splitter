@@ -3,13 +3,8 @@ import logging
 from pathlib import Path
 
 from jsonpath_ng import parse as jsonpath_parse
-<<<<<<< Updated upstream
-from jsonschema import validate
-
-=======
 from jsonpath_ng.exceptions import JSONPathError
 from jsonschema import validate, ValidationError
->>>>>>> Stashed changes
 from interfaces.pipeline_interfaces import StepInterface
 from src.state.merger_splitter_state import MergerSplitterState
 

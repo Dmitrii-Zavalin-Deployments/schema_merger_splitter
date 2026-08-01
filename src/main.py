@@ -1,21 +1,12 @@
 import argparse
 import json
 import logging
-<<<<<<< Updated upstream
 import sys
-from datetime import datetime
-from pathlib import Path
-
-from jsonschema import validate
-
-=======
-import argparse
 from datetime import datetime, timezone
 from pathlib import Path
+
 from jsonschema import validate, ValidationError
-from src.state.merger_splitter_state import MergerSplitterState
-from src.pipeline.steps import ExecuteMappingStep, WriteOutputStep
->>>>>>> Stashed changes
+
 from interfaces.pipeline_interfaces import PipelineInterface
 from src.pipeline.steps import ExecuteMappingStep, WriteOutputStep
 from src.state.merger_splitter_state import MergerSplitterState
