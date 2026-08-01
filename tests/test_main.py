@@ -1,6 +1,8 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
-from src.main import run_pure_pipeline, main
+
+from src.main import main, run_pure_pipeline
 
 # =============================================================================
 # ORCHESTRATION LAYER: run_pure_pipeline
