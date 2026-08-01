@@ -5,7 +5,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from jsonschema import validate, ValidationError
+from jsonschema import ValidationError, validate
 
 from interfaces.pipeline_interfaces import PipelineInterface
 from src.pipeline.steps import ExecuteMappingStep, WriteOutputStep
