@@ -4,7 +4,8 @@ from pathlib import Path
 
 from jsonpath_ng import parse as jsonpath_parse
 from jsonpath_ng.exceptions import JSONPathError
-from jsonschema import validate, ValidationError
+from jsonschema import ValidationError, validate
+
 from interfaces.pipeline_interfaces import StepInterface
 from src.state.merger_splitter_state import MergerSplitterState
 
