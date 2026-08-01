@@ -1,12 +1,21 @@
 import argparse
 import json
 import logging
+<<<<<<< Updated upstream
 import sys
 from datetime import datetime
 from pathlib import Path
 
 from jsonschema import validate
 
+=======
+import argparse
+from datetime import datetime, timezone
+from pathlib import Path
+from jsonschema import validate, ValidationError
+from src.state.merger_splitter_state import MergerSplitterState
+from src.pipeline.steps import ExecuteMappingStep, WriteOutputStep
+>>>>>>> Stashed changes
 from interfaces.pipeline_interfaces import PipelineInterface
 from src.pipeline.steps import ExecuteMappingStep, WriteOutputStep
 from src.state.merger_splitter_state import MergerSplitterState
@@ -63,7 +72,7 @@ def run_pure_pipeline(input_data: dict, simulators_dir: Path, output_filename: s
         with execution_receipt_path.open("w", encoding="utf-8") as r_file:
             json.dump(execution_receipt, r_file, indent=2)
         logger.info(f"Execution receipt persisted: {execution_receipt_path.name}")
-    except Exception as receipt_err:
+    except (OSError, json.JSONDecodeError, ValidationError) as receipt_err:
         logger.error(f"Failed to generate valid pipeline execution receipt: {receipt_err}")
 
     return container
@@ -79,7 +88,7 @@ def main():
         if not args.input_output_folder or not args.input_file or not args.output_file:
             logger.error("Missing required parameter contract. All explicit flags must be populated.")
             sys.exit(1)
-    except Exception as parse_err:
+    except argparse.ArgumentError as parse_err:
         logger.critical(f"Parameter interface error: {parse_err}")
         sys.exit(1)
 
@@ -87,9 +96,9 @@ def main():
     input_file_path = simulators_dir / args.input_file
     output_filename = args.output_file
     repo_root = Path(__file__).resolve().parents[1]
-    
+
     # Generate timestamped filename for historical tracking
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
     receipt_filename = f"schema_merger_splitter_execution_receipt_{timestamp}.json"
     execution_receipt_path = simulators_dir / receipt_filename
 
@@ -97,14 +106,14 @@ def main():
     try:
         with input_file_path.open("r", encoding="utf-8") as f:
             input_payload = json.load(f)
-        
+
         input_schema_path = repo_root / "schema" / "schema_merger_splitter_input_schema.json"
         with input_schema_path.open("r", encoding="utf-8") as s_file:
             input_schema = json.load(s_file)
             
         validate(instance=input_payload, schema=input_schema)
         logger.info("Inbound configuration validated successfully.")
-    except Exception as initialization_err:
+    except (OSError, json.JSONDecodeError, ValidationError) as initialization_err:
         logger.critical(f"Inbound Schema Integrity Failure: {initialization_err}")
         sys.exit(1)
 

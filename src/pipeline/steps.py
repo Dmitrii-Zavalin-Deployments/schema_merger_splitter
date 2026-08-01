@@ -3,8 +3,13 @@ import logging
 from pathlib import Path
 
 from jsonpath_ng import parse as jsonpath_parse
+<<<<<<< Updated upstream
 from jsonschema import validate
 
+=======
+from jsonpath_ng.exceptions import JSONPathError
+from jsonschema import validate, ValidationError
+>>>>>>> Stashed changes
 from interfaces.pipeline_interfaces import StepInterface
 from src.state.merger_splitter_state import MergerSplitterState
 
@@ -31,7 +36,7 @@ class ExecuteMappingStep(StepInterface):
             try:
                 with path.open("r", encoding="utf-8") as f:
                     src_json = json.load(f)
-            except Exception as e:
+            except (OSError, json.JSONDecodeError) as e:
                 logger.error(f"Unreadable file '{filename}': {e}")
                 errors.append(f"Unreadable file '{filename}': {e}")
                 continue
@@ -46,7 +51,7 @@ class ExecuteMappingStep(StepInterface):
                 try:
                     expr = jsonpath_parse(from_expr)
                     matches = [m.value for m in expr.find(src_json)]
-                except Exception as e:
+                except JSONPathError as e:
                     logger.error(f"Invalid JSONPath '{from_expr}': {e}")
                     errors.append(f"Invalid JSONPath '{from_expr}': {e}")
                     continue
@@ -83,7 +88,7 @@ class WriteOutputStep(StepInterface):
         try:
             with schema_path.open("r", encoding="utf-8") as f:
                 schema = json.load(f)
-        except Exception as e:
+        except (OSError, json.JSONDecodeError) as e:
             logger.critical(f"Failed to load schema: {e}")
             raise
 
@@ -91,7 +96,7 @@ class WriteOutputStep(StepInterface):
         
         try:
             validate(instance=assembled, schema=schema)
-        except Exception as e:
+        except ValidationError as e:
             logger.error(f"Schema Validation Failed: {e}")
             raise
 
