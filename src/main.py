@@ -5,7 +5,7 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
-from jsonschema import ValidationError, validate
+from jsonschema import validate, ValidationError
 
 from interfaces.pipeline_interfaces import PipelineInterface
 from src.pipeline.steps import ExecuteMappingStep, WriteOutputStep
@@ -79,7 +79,7 @@ def main():
         if not args.input_output_folder or not args.input_file or not args.output_file:
             logger.error("Missing required parameter contract. All explicit flags must be populated.")
             sys.exit(1)
-    except argparse.ArgumentError as parse_err:
+    except (argparse.ArgumentError, RuntimeError) as parse_err:
         logger.critical(f"Parameter interface error: {parse_err}")
         sys.exit(1)
 

@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock, patch
 
 import pytest
+from jsonschema import ValidationError
 
 from src.main import main, run_pure_pipeline
 
@@ -18,9 +19,9 @@ def test_run_pure_pipeline_receipt_failure(tmp_path):
     (simulators_dir / "in.json").write_text('{"a": 1}')
     invalid_receipt_path = simulators_dir / "receipt.json"
     
-    # Even if receipt validation raises an exception, the system must 
+    # Even if receipt validation raises a ValidationError, the system must 
     # survive and return the processed container.
-    with patch("src.main.validate", side_effect=Exception("Schema Invalid")):
+    with patch("src.main.validate", side_effect=ValidationError("Schema Invalid")):
         container = run_pure_pipeline(input_data, simulators_dir, "test_output.json", invalid_receipt_path)
     
     # Assert that the container object was returned despite the receipt failure.
