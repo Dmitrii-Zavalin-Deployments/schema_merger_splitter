@@ -30,7 +30,4 @@ def test_execution_signature():
     # The execute method must accept a container and return None.
     
     step = ValidStep()
-    try:
-        step.execute(container=None)
-    except Exception as e:
-        pytest.fail(f"ValidStep raised an exception on execution: {e}")
+    step.execute(container=None)

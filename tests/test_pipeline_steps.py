@@ -123,9 +123,8 @@ def test_write_output_schema_not_found(tmp_path):
     
     # Execution & Assertion: If the structural reference path is physically 
     # missing, the system must bubble up a standard FileNotFoundError.
-    with patch("src.pipeline.steps.Path.exists", return_value=False):
-        with pytest.raises(FileNotFoundError):
-            step.execute(container)
+    with patch("src.pipeline.steps.Path.exists", return_value=False), pytest.raises(FileNotFoundError):
+        step.execute(container)
 
 
 def test_write_output_schema_unreadable(tmp_path):
@@ -135,10 +134,12 @@ def test_write_output_schema_unreadable(tmp_path):
     
     # Execution & Assertion: Force a low-level physical disk read crash 
     # when opening the verification schema file. The process must raise it immediately.
-    with patch("src.pipeline.steps.Path.exists", return_value=True):
-        with patch("src.pipeline.steps.Path.open", side_effect=Exception("Disk Read Error")):
-            with pytest.raises(Exception, match="Disk Read Error"):
-                step.execute(container)
+    with (
+        patch("src.pipeline.steps.Path.exists", return_value=True),
+        patch("src.pipeline.steps.Path.open", side_effect=Exception("Disk Read Error")),
+        pytest.raises(Exception, match="Disk Read Error"),
+    ):
+        step.execute(container)
 
 
 def test_write_output_validation_fails(tmp_path):
@@ -151,12 +152,14 @@ def test_write_output_validation_fails(tmp_path):
     
     # Execution & Assertion: Stub external validation engines to throw 
     # mismatched schema validations, testing defensive formatting checkpoints.
-    with patch("src.pipeline.steps.Path.exists", return_value=True):
-        with patch("src.pipeline.steps.Path.open"):
-            with patch("src.pipeline.steps.json.load", return_value={"type": "object"}):
-                with patch("src.pipeline.steps.validate", side_effect=Exception("Validation Mismatch")):
-                    with pytest.raises(Exception, match="Validation Mismatch"):
-                        step.execute(container)
+    with (
+        patch("src.pipeline.steps.Path.exists", return_value=True),
+        patch("src.pipeline.steps.Path.open"),
+        patch("src.pipeline.steps.json.load", return_value={"type": "object"}),
+        patch("src.pipeline.steps.validate", side_effect=Exception("Validation Mismatch")),
+        pytest.raises(Exception, match="Validation Mismatch"),
+    ):
+        step.execute(container)
 
 
 def test_write_output_happy_path(tmp_path):
@@ -170,11 +173,13 @@ def test_write_output_happy_path(tmp_path):
     step = WriteOutputStep(tmp_path, "output.json", results_path)
     
     # Execution: Simulate normal filesystem conditions with correct parameters.
-    with patch("src.pipeline.steps.Path.exists", return_value=True):
-        with patch("src.pipeline.steps.Path.open"):
-            with patch("src.pipeline.steps.json.load", return_value={}):
-                with patch("src.pipeline.steps.validate", return_value=True):
-                    with patch("json.dump") as mock_dump:
-                        step.execute(container)
-                        # Assert that serialization execution completed cleanly.
-                        assert mock_dump.called
+    with (
+        patch("src.pipeline.steps.Path.exists", return_value=True),
+        patch("src.pipeline.steps.Path.open"),
+        patch("src.pipeline.steps.json.load", return_value={}),
+        patch("src.pipeline.steps.validate", return_value=True),
+        patch("json.dump") as mock_dump,
+    ):
+        step.execute(container)
+        # Assert that serialization execution completed cleanly.
+        assert mock_dump.called

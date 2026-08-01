@@ -1,8 +1,6 @@
-from unittest.mock import MagicMock, patch
-
 import pytest
-
-from src.main import main, run_pure_pipeline
+from unittest.mock import patch, MagicMock
+from src.main import run_pure_pipeline, main
 
 # =============================================================================
 # ORCHESTRATION LAYER: run_pure_pipeline
@@ -50,18 +48,16 @@ def test_run_pure_pipeline_happy_path(tmp_path):
 def test_main_missing_arguments():
     # The system must enforce a strict parameter contract. 
     # If the user provides no arguments, the system must exit with code 1.
-    with patch("sys.argv", ["src/main.py"]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
-        assert exc_info.value.code == 1
+    with patch("sys.argv", ["src/main.py"]), pytest.raises(SystemExit) as exc_info:
+        main()
+    assert exc_info.value.code == 1
 
 def test_main_parse_args_exception():
     # If an unexpected system interruption occurs during argument parsing,
     # the system must catch the RuntimeError and signal failure.
-    with patch("argparse.ArgumentParser.parse_args", side_effect=RuntimeError("Forced parsing explosion")):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
-        assert exc_info.value.code == 1
+    with patch("argparse.ArgumentParser.parse_args", side_effect=RuntimeError("Forced parsing explosion")), pytest.raises(SystemExit) as exc_info:
+        main()
+    assert exc_info.value.code == 1
 
 def test_main_integrity_failure(tmp_path):
     # The system must validate the input configuration payload immediately upon load.
@@ -69,15 +65,17 @@ def test_main_integrity_failure(tmp_path):
     bad_config = tmp_path / "corrupted_config.json"
     bad_config.write_text("{ unparseable raw payload ...", encoding="utf-8")
     
-    with patch("sys.argv", [
-        "src/main.py", 
-        "--input_output_folder", str(tmp_path), 
-        "--input_file", "corrupted_config.json", 
-        "--output_file", "out.json"
-    ]):
-        with pytest.raises(SystemExit) as exc_info:
-            main()
-        assert exc_info.value.code == 1
+    with (
+        patch("sys.argv", [
+            "src/main.py", 
+            "--input_output_folder", str(tmp_path), 
+            "--input_file", "corrupted_config.json", 
+            "--output_file", "out.json"
+        ]),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
+    assert exc_info.value.code == 1
 
 def test_main_execution_success(tmp_path):
     # When all inputs are valid and the pipeline succeeds, 
@@ -89,18 +87,23 @@ def test_main_execution_success(tmp_path):
     mock_container = MagicMock()
     mock_container.success = True
     
-    with patch("sys.argv", [
-        "src/main.py", 
-        "--input_output_folder", str(tmp_path), 
-        "--input_file", "valid_config.json", 
-        "--output_file", "out.json"
-    ]), patch("src.main.Path.open"), patch("json.load", return_value={"sources": {}}):
-        with patch("src.main.validate", return_value=True):
-            with patch("src.main.run_pure_pipeline", return_value=mock_container):
-                with pytest.raises(SystemExit) as exc_info:
-                    main()
-                # Exit code 0 implies success.
-                assert exc_info.value.code == 0
+    with (
+        patch("sys.argv", [
+            "src/main.py", 
+            "--input_output_folder", str(tmp_path), 
+            "--input_file", "valid_config.json", 
+            "--output_file", "out.json"
+        ]),
+        patch("src.main.Path.open"),
+        patch("json.load", return_value={"sources": {}}),
+        patch("src.main.validate", return_value=True),
+        patch("src.main.run_pure_pipeline", return_value=mock_container),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
+    
+    # Exit code 0 implies success.
+    assert exc_info.value.code == 0
 
 def test_main_execution_pipeline_failure(tmp_path):
     # If the pipeline logic fails (e.g., data mapping error),
@@ -112,15 +115,20 @@ def test_main_execution_pipeline_failure(tmp_path):
     mock_container = MagicMock()
     mock_container.success = False
     
-    with patch("sys.argv", [
-        "src/main.py", 
-        "--input_output_folder", str(tmp_path), 
-        "--input_file", "valid_config.json", 
-        "--output_file", "out.json"
-    ]), patch("src.main.Path.open"), patch("json.load", return_value={"sources": {}}):
-        with patch("src.main.validate", return_value=True):
-            with patch("src.main.run_pure_pipeline", return_value=mock_container):
-                with pytest.raises(SystemExit) as exc_info:
-                    main()
-                # Exit code 1 implies logic failure.
-                assert exc_info.value.code == 1
+    with (
+        patch("sys.argv", [
+            "src/main.py", 
+            "--input_output_folder", str(tmp_path), 
+            "--input_file", "valid_config.json", 
+            "--output_file", "out.json"
+        ]),
+        patch("src.main.Path.open"),
+        patch("json.load", return_value={"sources": {}}),
+        patch("src.main.validate", return_value=True),
+        patch("src.main.run_pure_pipeline", return_value=mock_container),
+        pytest.raises(SystemExit) as exc_info,
+    ):
+        main()
+    
+    # Exit code 1 implies logic failure.
+    assert exc_info.value.code == 1
