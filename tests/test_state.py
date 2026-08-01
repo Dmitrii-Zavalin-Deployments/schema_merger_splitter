@@ -1,4 +1,5 @@
 import pytest
+
 from src.state.merger_splitter_state import MergerSplitterState
 
 # -----------------------------------------------------------------------------

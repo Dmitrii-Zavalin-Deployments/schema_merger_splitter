@@ -1,12 +1,14 @@
 from pathlib import Path
+
 from interfaces.pipeline_interfaces import PipelineInterface
+
 
 class MergerSplitterState(PipelineInterface):
     """
     Sovereign Container: Aggregates the pure domain output state.
     Enforces a strict zero-default policy with no external configuration tracking.
     """
-    __slots__ = ["_inputs", "_merged_output", "_success", "_errors", "_base_dir"]
+    __slots__ = ["_base_dir", "_errors", "_inputs", "_merged_output", "_success"]
 
     def __init__(self, inputs: dict):
         self._inputs = inputs

@@ -1,4 +1,5 @@
 import pytest
+
 from interfaces.pipeline_interfaces import StepInterface
 
 # -----------------------------------------------------------------------------

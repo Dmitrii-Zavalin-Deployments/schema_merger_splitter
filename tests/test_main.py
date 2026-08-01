@@ -1,6 +1,8 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
-from src.main import run_pure_pipeline, main
+
+from src.main import main, run_pure_pipeline
 
 # =============================================================================
 # ORCHESTRATION LAYER: run_pure_pipeline
@@ -92,15 +94,13 @@ def test_main_execution_success(tmp_path):
         "--input_output_folder", str(tmp_path), 
         "--input_file", "valid_config.json", 
         "--output_file", "out.json"
-    ]):
-        with patch("src.main.Path.open"):
-            with patch("json.load", return_value={"sources": {}}):
-                with patch("src.main.validate", return_value=True):
-                    with patch("src.main.run_pure_pipeline", return_value=mock_container):
-                        with pytest.raises(SystemExit) as exc_info:
-                            main()
-                        # Exit code 0 implies success.
-                        assert exc_info.value.code == 0
+    ]), patch("src.main.Path.open"), patch("json.load", return_value={"sources": {}}):
+        with patch("src.main.validate", return_value=True):
+            with patch("src.main.run_pure_pipeline", return_value=mock_container):
+                with pytest.raises(SystemExit) as exc_info:
+                    main()
+                # Exit code 0 implies success.
+                assert exc_info.value.code == 0
 
 def test_main_execution_pipeline_failure(tmp_path):
     # If the pipeline logic fails (e.g., data mapping error),
@@ -117,12 +117,10 @@ def test_main_execution_pipeline_failure(tmp_path):
         "--input_output_folder", str(tmp_path), 
         "--input_file", "valid_config.json", 
         "--output_file", "out.json"
-    ]):
-        with patch("src.main.Path.open"):
-            with patch("json.load", return_value={"sources": {}}):
-                with patch("src.main.validate", return_value=True):
-                    with patch("src.main.run_pure_pipeline", return_value=mock_container):
-                        with pytest.raises(SystemExit) as exc_info:
-                            main()
-                        # Exit code 1 implies logic failure.
-                        assert exc_info.value.code == 1
+    ]), patch("src.main.Path.open"), patch("json.load", return_value={"sources": {}}):
+        with patch("src.main.validate", return_value=True):
+            with patch("src.main.run_pure_pipeline", return_value=mock_container):
+                with pytest.raises(SystemExit) as exc_info:
+                    main()
+                # Exit code 1 implies logic failure.
+                assert exc_info.value.code == 1

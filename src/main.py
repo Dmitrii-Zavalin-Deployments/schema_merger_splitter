@@ -1,13 +1,15 @@
-import sys
+import argparse
 import json
 import logging
-import argparse
+import sys
 from datetime import datetime
 from pathlib import Path
+
 from jsonschema import validate
-from src.state.merger_splitter_state import MergerSplitterState
-from src.pipeline.steps import ExecuteMappingStep, WriteOutputStep
+
 from interfaces.pipeline_interfaces import PipelineInterface
+from src.pipeline.steps import ExecuteMappingStep, WriteOutputStep
+from src.state.merger_splitter_state import MergerSplitterState
 
 # Configure Logging
 logging.basicConfig(

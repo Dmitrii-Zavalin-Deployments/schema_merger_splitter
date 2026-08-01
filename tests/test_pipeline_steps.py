@@ -1,5 +1,7 @@
-import pytest
 from unittest.mock import patch
+
+import pytest
+
 from src.pipeline.steps import ExecuteMappingStep, WriteOutputStep
 from src.state.merger_splitter_state import MergerSplitterState
 

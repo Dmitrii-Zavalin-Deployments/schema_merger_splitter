@@ -1,8 +1,10 @@
 import json
 import logging
 from pathlib import Path
+
 from jsonpath_ng import parse as jsonpath_parse
 from jsonschema import validate
+
 from interfaces.pipeline_interfaces import StepInterface
 from src.state.merger_splitter_state import MergerSplitterState
 
