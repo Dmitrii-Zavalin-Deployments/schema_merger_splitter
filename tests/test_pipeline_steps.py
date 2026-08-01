@@ -1,6 +1,8 @@
+import json
+from pathlib import Path
 from unittest.mock import patch
-
 import pytest
+from jsonschema import ValidationError
 
 from src.pipeline.steps import ExecuteMappingStep, WriteOutputStep
 from src.state.merger_splitter_state import MergerSplitterState
@@ -183,3 +185,45 @@ def test_write_output_happy_path(tmp_path):
         step.execute(container)
         # Assert that serialization execution completed cleanly.
         assert mock_dump.called
+
+def test_write_output_step_schema_load_failure(tmp_path):
+    """
+    Verifies that WriteOutputStep correctly catches and logs 
+    OSError or JSONDecodeError when loading the output schema, then re-raises.
+    Covers lines 87-89.
+    """
+    simulators_dir = tmp_path
+    output_filename = "out.json"
+    results_path = tmp_path / "results.json"
+    
+    step = WriteOutputStep(simulators_dir, output_filename, results_path)
+    container = MergerSplitterState(inputs={"sources": {}})
+    container.success = True
+    container.errors = []
+    container.merged_output = {}
+    
+    # Force json.load to raise JSONDecodeError during schema loading
+    with patch("json.load", side_effect=json.JSONDecodeError("Malformed schema", "", 0)), \
+         pytest.raises(json.JSONDecodeError):
+        step.execute(container)
+
+def test_write_output_step_schema_validation_failure(tmp_path):
+    """
+    Verifies that WriteOutputStep catches ValidationError when the 
+    assembled payload violates the output schema, logs it, and re-raises.
+    Covers lines 95-97.
+    """
+    simulators_dir = tmp_path
+    output_filename = "out.json"
+    results_path = tmp_path / "results.json"
+    
+    step = WriteOutputStep(simulators_dir, output_filename, results_path)
+    container = MergerSplitterState(inputs={"sources": {}})
+    container.success = True
+    container.errors = []
+    container.merged_output = {}
+    
+    # Force validate() to raise ValidationError
+    with patch("src.pipeline.steps.validate", side_effect=ValidationError("Schema mismatch")), \
+         pytest.raises(ValidationError):
+        step.execute(container)
